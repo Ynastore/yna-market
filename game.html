@@ -1,320 +1,834 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="theme-color" content="#0b0f19"/>
-  <title>Mini Game — YNA STORE</title>
-  <meta name="description" content="Mini game ringan: Neon Tap (score + combo) — YNA STORE." />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Game — YNA STORE</title>
   <link rel="stylesheet" href="assets/style.css"/>
+
+  <style>
+    :root{
+      --bg1:#070A12; --bg2:#0B1430;
+      --card: rgba(255,255,255,.06);
+      --line: rgba(255,255,255,.10);
+      --text:#EAF0FF; --muted: rgba(234,240,255,.68);
+      --glow: 0 0 0 1px rgba(255,255,255,.06), 0 30px 80px rgba(0,0,0,.55);
+      --radius: 18px;
+    }
+    body{
+      margin:0;
+      color:var(--text);
+      background:
+        radial-gradient(1000px 700px at 20% 0%, rgba(120,140,255,.18), transparent 55%),
+        radial-gradient(900px 600px at 80% 10%, rgba(0,255,209,.10), transparent 55%),
+        radial-gradient(900px 700px at 50% 100%, rgba(255,0,168,.10), transparent 55%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      overflow:hidden;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    }
+
+    /* topbar match theme */
+    .topbar{
+      position: sticky; top:0; z-index:10;
+      backdrop-filter: blur(12px);
+      background: linear-gradient(180deg, rgba(7,10,18,.88), rgba(7,10,18,.55));
+      border-bottom: 1px solid var(--line);
+    }
+    .row{
+      max-width: 1100px;
+      margin:0 auto;
+      padding: 12px 14px;
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      text-decoration:none; color:var(--text);
+    }
+    .dot{
+      width:12px; height:12px; border-radius:999px;
+      background: radial-gradient(circle at 30% 30%, #B8C2FF, #4B5BFF 55%, #0AF 100%);
+      box-shadow: 0 0 22px rgba(96,120,255,.45);
+    }
+    .brand__name{font-weight:700; letter-spacing:.4px}
+    .tag{
+      font-size:12px; color:var(--muted);
+      padding: 6px 10px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background: rgba(255,255,255,.04);
+      white-space:nowrap;
+    }
+
+    /* layout */
+    .wrap{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 14px;
+      display:grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap: 14px;
+      height: calc(100vh - 60px);
+    }
+    @media (max-width: 980px){
+      .wrap{grid-template-columns:1fr; height:auto; overflow:auto}
+      body{overflow:auto}
+    }
+
+    .card{
+      background: var(--card);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--glow);
+      overflow:hidden;
+    }
+    .card-h{
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
+    }
+    .card-h h1{margin:0; font-size:16px}
+    .sub{margin:0; font-size:12px; color:var(--muted)}
+    .panel{
+      padding: 14px;
+      display:grid;
+      gap: 10px;
+    }
+
+    .btn{
+      cursor:pointer;
+      border:none;
+      color:var(--text);
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.08);
+      border:1px solid var(--line);
+      transition: transform .12s ease, background .12s ease;
+      user-select:none;
+    }
+    .btn:hover{transform: translateY(-1px); background: rgba(255,255,255,.10)}
+    .btn:active{transform: translateY(0px) scale(.98)}
+    .btn.primary{
+      background: linear-gradient(90deg, rgba(75,91,255,.55), rgba(0,255,209,.22));
+      border:1px solid rgba(255,255,255,.14);
+    }
+    .btn.danger{
+      background: linear-gradient(90deg, rgba(255,68,178,.40), rgba(255,255,255,.06));
+      border:1px solid rgba(255,255,255,.14);
+    }
+
+    .kv{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .stat{
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 14px;
+      padding: 10px;
+    }
+    .stat b{display:block; font-size:12px; color:var(--muted)}
+    .stat span{font-size:18px; font-weight:800}
+
+    .hint{
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    /* canvas */
+    .arena{
+      position: relative;
+      height: 100%;
+      min-height: 520px;
+      display:flex;
+      flex-direction:column;
+    }
+    .canvasWrap{
+      position: relative;
+      flex:1;
+      background:
+        radial-gradient(700px 380px at 20% 0%, rgba(120,140,255,.14), transparent 60%),
+        radial-gradient(600px 340px at 80% 40%, rgba(0,255,209,.10), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.03), rgba(0,0,0,.10));
+    }
+    canvas{display:block; width:100%; height:100%}
+    .overlay{
+      position:absolute; inset:0;
+      display:flex; align-items:center; justify-content:center;
+      pointer-events:none;
+    }
+    .toast{
+      pointer-events:none;
+      background: rgba(0,0,0,.35);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: 16px;
+      padding: 12px 14px;
+      backdrop-filter: blur(10px);
+      text-align:center;
+      max-width: 520px;
+      margin: 0 14px;
+    }
+    .toast h2{margin:0 0 6px 0; font-size:18px}
+    .toast p{margin:0; font-size:12px; color:var(--muted); line-height:1.5}
+    .hidden{display:none!important}
+
+    /* mobile controls */
+    .mobileControls{
+      display:none;
+      gap:10px;
+      padding: 12px;
+      border-top: 1px solid var(--line);
+      background: rgba(0,0,0,.18);
+      backdrop-filter: blur(10px);
+    }
+    .padBtn{
+      flex:1;
+      text-align:center;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      user-select:none;
+      font-weight:700;
+    }
+    .padBtn:active{transform: scale(.98)}
+    @media (max-width: 980px){
+      .mobileControls{display:flex}
+      .arena{min-height: 560px}
+    }
+
+    .badge{
+      font-size: 11px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      color: rgba(234,240,255,.85);
+      white-space:nowrap;
+    }
+
+    .shop{
+      display:grid;
+      gap: 10px;
+      margin-top: 6px;
+    }
+    .item{
+      background: rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: 14px;
+      padding: 10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .item .t{
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .item .d{
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .mini{
+      font-size: 12px;
+      padding: 9px 12px;
+      border-radius: 12px;
+    }
+  </style>
 </head>
 
-<body class="app">
-  <div id="loader" class="loader">
-    <div class="loader__card">
-      <div class="loader__logo">YNA</div>
-      <div class="loader__text">
-        <div class="loader__title">GAME</div>
-        <div class="loader__sub">Loading…</div>
-      </div>
-      <div class="loader__bar"><span></span></div>
+<body>
+  <div class="topbar">
+    <div class="row">
+      <a class="brand" href="index.html">
+        <span class="dot"></span>
+        <div>
+          <div class="brand__name">YNA STORE</div>
+          <div class="sub">Game — Neon Runner</div>
+        </div>
+      </a>
+      <div class="tag">Space / Tap • Mobile Ready</div>
     </div>
   </div>
 
-  <canvas id="snow" class="snow"></canvas>
-
-  <header class="topbar">
-    <a class="brand" href="index.html">
-      <span class="brand__dot"></span>
-      <span class="brand__name">YNA STORE</span>
-      <span class="brand__tag">Mini Game</span>
-    </a>
-
-    <nav class="nav" id="nav">
-      <a href="index.html">Home</a>
-      <a href="produk.html">Produk</a>
-      <a href="order-panel.html">Order Panel</a>
-      <a href="order-script.html">Order Script</a>
-      <a href="order-sewa.html">Sewa Bot</a>
-      <a href="chat.html">Chat Yna AI</a>
-      <a href="kontak.html" class="nav__cta">Kontak</a>
-    </nav>
-
-    <button class="hamburger" id="hamburger" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-  </header>
-
-  <main class="container">
-    <section class="section" style="margin-top:0;">
-      <div class="section__head">
+  <div class="wrap">
+    <!-- GAME -->
+    <div class="card arena">
+      <div class="card-h">
         <div>
-          <h2 class="h2">Neon Tap</h2>
-          <p class="muted">Tap target sebelum hilang. Makin cepat, makin tinggi combo.</p>
+          <h1>Neon Runner</h1>
+          <p class="sub">Lompat, hindari rintangan, kumpulin koin ✨</p>
         </div>
-        <a class="btn btn--small btn--ghost" href="produk.html">Balik ke Produk</a>
+        <div class="badge" id="modeBadge">MODE: EASY</div>
       </div>
 
-      <div class="grid" style="display:grid; gap:14px; grid-template-columns: 1fr;">
-        <div class="card card--glass">
-          <div class="card__head">
-            <div class="card__title">Arena</div>
-            <div class="badge badge--soft" id="modeBadge">READY</div>
-          </div>
+      <div class="canvasWrap">
+        <canvas id="cv"></canvas>
 
-          <div class="quick" style="margin-bottom:12px;">
-            <div class="quick__item">
-              <div class="quick__k">Score</div>
-              <div class="quick__v" id="score">0</div>
-            </div>
-            <div class="quick__item">
-              <div class="quick__k">Combo</div>
-              <div class="quick__v" id="combo">x1</div>
-            </div>
-            <div class="quick__item">
-              <div class="quick__k">Time</div>
-              <div class="quick__v" id="time">30s</div>
-            </div>
-            <div class="quick__item">
-              <div class="quick__k">Best</div>
-              <div class="quick__v" id="best">0</div>
-            </div>
-          </div>
-
-          <div id="arena" class="game-arena" aria-label="Game arena">
-            <button id="target" class="game-target" aria-label="Target"></button>
-            <div class="game-hint">
-              <div class="h3" style="margin:0;">Tap untuk mulai</div>
-              <div class="muted" style="margin-top:6px;">(di HP tinggal tap layar)</div>
-            </div>
-          </div>
-
-          <div class="hero__actions" style="margin-top:12px;">
-            <button id="btnStart" class="btn btn--primary" type="button">
-              Start
-              <span class="btn__glow"></span>
-            </button>
-            <button id="btnReset" class="btn btn--ghost" type="button">Reset</button>
-            <a class="btn btn--ghost" href="https://wa.me/6283173403262" target="_blank" rel="noopener">Order ke Admin</a>
-          </div>
-
-          <div class="muted" style="margin-top:10px; font-size:12px; line-height:1.6;">
-            Tip: kalau score kamu tinggi, screenshot lalu post dan tag YNA STORE 😄
+        <div class="overlay" id="overlay">
+          <div class="toast">
+            <h2 id="ovTitle">Siap main? 🚀</h2>
+            <p id="ovText">Tekan <b>SPACE</b> buat lompat. Tahan buat lompat lebih tinggi. Di HP, tap area kiri/kanan.</p>
+            <p class="sub" style="margin-top:10px;">Klik <b>Start</b> di panel kanan.</p>
           </div>
         </div>
       </div>
 
-      <footer class="footer">
-        <div class="footer__bottom">
-          <span>© <span id="year"></span> YNA STORE</span>
-          <span class="muted">Mini Game</span>
+      <div class="mobileControls">
+        <div class="padBtn" id="btnJump">JUMP</div>
+        <div class="padBtn" id="btnDash">DASH</div>
+      </div>
+    </div>
+
+    <!-- SIDE PANEL -->
+    <div class="card">
+      <div class="card-h">
+        <div>
+          <h1>Control Panel</h1>
+          <p class="sub">Skor tinggi = aura makin gacor 😼</p>
         </div>
-      </footer>
-    </section>
-  </main>
+      </div>
 
-  <audio id="clickSound" preload="auto">
-    <source src="assets/click.mp3" type="audio/mpeg">
-  </audio>
+      <div class="panel">
+        <div class="kv">
+          <div class="stat"><b>Score</b><span id="score">0</span></div>
+          <div class="stat"><b>Coins</b><span id="coins">0</span></div>
+          <div class="stat"><b>Best</b><span id="best">0</span></div>
+          <div class="stat"><b>Speed</b><span id="spd">1.0x</span></div>
+        </div>
 
-  <script src="assets/app.js"></script>
+        <button class="btn primary" id="startBtn">Start</button>
+        <button class="btn" id="toggleMode">Toggle Mode (Easy/Pro)</button>
+        <button class="btn danger" id="resetBest">Reset Best</button>
+
+        <div class="hint">
+          <b>How to play:</b><br>
+          • <span class="k">SPACE</span> / Tap = Jump (tahan buat lebih tinggi)<br>
+          • <span class="k">SHIFT</span> / Dash = Burst (cooldown)<br>
+          • Ambil koin buat buka “voucher” di bawah (cuma tampilan fun 😄)
+        </div>
+
+        <div class="shop">
+          <div class="item">
+            <div>
+              <div class="t">Voucher “Diskon Panel”</div>
+              <div class="d">Butuh 30 coins (fun card)</div>
+            </div>
+            <button class="btn mini" id="buy1">Claim</button>
+          </div>
+          <div class="item">
+            <div>
+              <div class="t">Sticker “YNA Neon”</div>
+              <div class="d">Butuh 60 coins (fun card)</div>
+            </div>
+            <button class="btn mini" id="buy2">Claim</button>
+          </div>
+          <div class="item">
+            <div>
+              <div class="t">Title “Buyer VIP”</div>
+              <div class="d">Butuh 120 coins (fun card)</div>
+            </div>
+            <button class="btn mini" id="buy3">Claim</button>
+          </div>
+          <div class="hint" id="shopMsg"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // ====== Neon Tap (100% jalan, ringan) ======
-    const arena = document.getElementById("arena");
-    const target = document.getElementById("target");
-    const hint = arena.querySelector(".game-hint");
+    // ====== Simple modern runner (canvas) ======
+    const cv = document.getElementById('cv');
+    const ctx = cv.getContext('2d');
 
-    const scoreEl = document.getElementById("score");
-    const comboEl = document.getElementById("combo");
-    const timeEl = document.getElementById("time");
-    const bestEl = document.getElementById("best");
-    const modeBadge = document.getElementById("modeBadge");
-
-    const btnStart = document.getElementById("btnStart");
-    const btnReset = document.getElementById("btnReset");
-
-    const S = {
-      running:false,
-      score:0,
-      combo:1,
-      time:30,
-      timer:null,
-      missTimeout:null,
-      best: Number(localStorage.getItem("yna_best_score") || 0),
+    const ui = {
+      score: document.getElementById('score'),
+      coins: document.getElementById('coins'),
+      best: document.getElementById('best'),
+      spd: document.getElementById('spd'),
+      overlay: document.getElementById('overlay'),
+      ovTitle: document.getElementById('ovTitle'),
+      ovText: document.getElementById('ovText'),
+      modeBadge: document.getElementById('modeBadge'),
+      shopMsg: document.getElementById('shopMsg'),
     };
-    bestEl.textContent = S.best;
 
-    function clamp(n,min,max){ return Math.max(min, Math.min(max,n)); }
+    function resize(){
+      const box = cv.parentElement.getBoundingClientRect();
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      cv.width = Math.floor(box.width * dpr);
+      cv.height = Math.floor(box.height * dpr);
+      cv.style.width = box.width + "px";
+      cv.style.height = box.height + "px";
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+    window.addEventListener('resize', resize);
+    resize();
 
-    function randPos() {
-      const r = arena.getBoundingClientRect();
-      const pad = 18;
-      const size = 64;
-      const x = Math.random() * (r.width - size - pad*2) + pad;
-      const y = Math.random() * (r.height - size - pad*2) + pad;
-      return {x,y};
+    // persistent best
+    const BEST_KEY = "yna_game_best_v2";
+    let best = parseInt(localStorage.getItem(BEST_KEY) || "0", 10);
+    ui.best.textContent = best;
+
+    // mode
+    let proMode = false;
+    function setMode(){
+      ui.modeBadge.textContent = "MODE: " + (proMode ? "PRO" : "EASY");
+    }
+    setMode();
+
+    // world
+    let running = false;
+    let tPrev = 0;
+
+    const groundY = ()=> (cv.getBoundingClientRect().height - 90);
+
+    const player = {
+      x: 90,
+      y: 0,
+      w: 34,
+      h: 34,
+      vy: 0,
+      onGround: true,
+      dashCd: 0,
+      dashT: 0
+    };
+
+    let world = {
+      score: 0,
+      coins: 0,
+      speed: 380,
+      spawnT: 0,
+      coinT: 0,
+      obstacles: [],
+      pickups: [],
+      sparks: []
+    };
+
+    function resetWorld(){
+      world.score = 0;
+      world.coins = 0;
+      world.speed = proMode ? 460 : 380;
+      world.spawnT = 0;
+      world.coinT = 0;
+      world.obstacles = [];
+      world.pickups = [];
+      world.sparks = [];
+      player.y = groundY();
+      player.vy = 0;
+      player.onGround = true;
+      player.dashCd = 0;
+      player.dashT = 0;
+      syncUI();
     }
 
-    function setTargetPos() {
-      const {x,y} = randPos();
-      target.style.left = x + "px";
-      target.style.top = y + "px";
-      target.style.transform = "scale(1)";
-      target.style.opacity = "1";
-
-      // waktu muncul makin cepat kalau combo naik
-      const ttl = clamp(900 - (S.combo-1)*60, 300, 900);
-
-      clearTimeout(S.missTimeout);
-      S.missTimeout = setTimeout(() => {
-        // miss
-        S.combo = 1;
-        comboEl.textContent = "x" + S.combo;
-        target.style.transform = "scale(.85)";
-        target.style.opacity = ".55";
-        // pindah lagi
-        if (S.running) setTimeout(setTargetPos, 80);
-      }, ttl);
+    function syncUI(){
+      ui.score.textContent = Math.floor(world.score);
+      ui.coins.textContent = world.coins;
+      ui.spd.textContent = (world.speed/380).toFixed(1) + "x";
+      ui.best.textContent = best;
     }
 
-    function updateUI(){
-      scoreEl.textContent = S.score;
-      comboEl.textContent = "x" + S.combo;
-      timeEl.textContent = S.time + "s";
+    function showOverlay(title, text){
+      ui.ovTitle.textContent = title;
+      ui.ovText.innerHTML = text;
+      ui.overlay.classList.remove("hidden");
+    }
+    function hideOverlay(){
+      ui.overlay.classList.add("hidden");
+    }
+
+    // input
+    let jumpHold = false;
+
+    function jump(hold=false){
+      if(!running) return;
+      if(player.onGround){
+        player.vy = -(proMode ? 720 : 660);
+        player.onGround = false;
+        jumpHold = hold;
+        fxBurst(player.x+player.w/2, player.y+player.h, 10);
+      }
+    }
+
+    function dash(){
+      if(!running) return;
+      if(player.dashCd > 0) return;
+      player.dashT = 0.16;     // short burst
+      player.dashCd = 1.0;     // cooldown
+      fxBurst(player.x+player.w, player.y+player.h/2, 18);
+    }
+
+    document.addEventListener("keydown", (e)=>{
+      if(e.code==="Space"){ e.preventDefault(); jump(true); }
+      if(e.code==="ShiftLeft" || e.code==="ShiftRight"){ dash(); }
+    });
+    document.addEventListener("keyup", (e)=>{
+      if(e.code==="Space"){ jumpHold = false; }
+    });
+
+    // touch controls
+    const btnJump = document.getElementById("btnJump");
+    const btnDash = document.getElementById("btnDash");
+
+    const touchStart = (fn)=> (e)=>{ e.preventDefault(); fn(true); };
+    const touchEnd = (fn)=> (e)=>{ e.preventDefault(); fn(false); };
+
+    btnJump.addEventListener("touchstart", touchStart(()=>jump(true)), {passive:false});
+    btnJump.addEventListener("touchend", touchEnd(()=>{jumpHold=false}), {passive:false});
+    btnDash.addEventListener("touchstart", (e)=>{ e.preventDefault(); dash(); }, {passive:false});
+
+    // allow tap on canvas too
+    cv.addEventListener("pointerdown", (e)=>{
+      const r = cv.getBoundingClientRect();
+      const x = e.clientX - r.left;
+      if(x < r.width*0.6) jump(true);
+      else dash();
+    });
+    cv.addEventListener("pointerup", ()=>{ jumpHold=false; });
+
+    // particles
+    function fxBurst(x,y,n){
+      for(let i=0;i<n;i++){
+        world.sparks.push({
+          x,y,
+          vx:(Math.random()*2-1)*220,
+          vy:(Math.random()*2-1)*220,
+          life: 0.45 + Math.random()*0.35
+        });
+      }
+    }
+
+    // spawn
+    function spawnObstacle(){
+      const h = proMode ? (30 + Math.random()*36) : (28 + Math.random()*30);
+      const w = 18 + Math.random()*22;
+      world.obstacles.push({
+        x: cv.getBoundingClientRect().width + 40,
+        y: groundY() + (player.h - h),
+        w, h,
+        type: Math.random() < 0.25 && proMode ? "tall" : "box"
+      });
+    }
+    function spawnCoin(){
+      const baseY = groundY() - (40 + Math.random()*120);
+      world.pickups.push({
+        x: cv.getBoundingClientRect().width + 40,
+        y: Math.max(70, baseY),
+        r: 10,
+        t: 0
+      });
+    }
+
+    function aabb(ax,ay,aw,ah,bx,by,bw,bh){
+      return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
+    }
+
+    // render helpers
+    function drawGlowCircle(x,y,r,alpha){
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.beginPath();
+      ctx.arc(x,y,r,0,Math.PI*2);
+      ctx.fillStyle = "rgba(120,140,255,.35)";
+      ctx.fill();
+      ctx.shadowBlur = 20;
+      ctx.shadowColor = "rgba(0,255,209,.25)";
+      ctx.fillStyle = "rgba(0,255,209,.18)";
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawGrid(){
+      const w = cv.getBoundingClientRect().width;
+      const h = cv.getBoundingClientRect().height;
+      ctx.save();
+      ctx.globalAlpha = 0.12;
+      ctx.strokeStyle = "rgba(255,255,255,.20)";
+      ctx.lineWidth = 1;
+
+      const step = 44;
+      for(let x=0;x<w;x+=step){
+        ctx.beginPath();
+        ctx.moveTo(x,0);
+        ctx.lineTo(x,h);
+        ctx.stroke();
+      }
+      for(let y=0;y<h;y+=step){
+        ctx.beginPath();
+        ctx.moveTo(0,y);
+        ctx.lineTo(w,y);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function render(dt){
+      const w = cv.getBoundingClientRect().width;
+      const h = cv.getBoundingClientRect().height;
+
+      // bg
+      ctx.clearRect(0,0,w,h);
+      drawGrid();
+
+      // horizon glow
+      drawGlowCircle(w*0.2, 70, 120, .35);
+      drawGlowCircle(w*0.85, 160, 160, .25);
+
+      // ground line
+      ctx.save();
+      ctx.strokeStyle = "rgba(255,255,255,.14)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, groundY()+player.h);
+      ctx.lineTo(w, groundY()+player.h);
+      ctx.stroke();
+      ctx.restore();
+
+      // player
+      ctx.save();
+      const px = player.x;
+      const py = player.y;
+
+      // trail when dashing
+      if(player.dashT > 0){
+        ctx.globalAlpha = 0.22;
+        ctx.fillStyle = "rgba(0,255,209,.35)";
+        ctx.fillRect(px-26, py+6, 20, 22);
+        ctx.globalAlpha = 1;
+      }
+
+      ctx.shadowBlur = 22;
+      ctx.shadowColor = "rgba(75,91,255,.45)";
+      ctx.fillStyle = "rgba(234,240,255,.14)";
+      ctx.fillRect(px, py, player.w, player.h);
+
+      ctx.shadowBlur = 14;
+      ctx.shadowColor = "rgba(0,255,209,.35)";
+      ctx.fillStyle = "rgba(0,255,209,.14)";
+      ctx.fillRect(px+6, py+6, player.w-12, player.h-12);
+      ctx.restore();
+
+      // obstacles
+      for(const o of world.obstacles){
+        ctx.save();
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = "rgba(255,0,168,.35)";
+        ctx.fillStyle = "rgba(255,68,178,.16)";
+        ctx.fillRect(o.x, o.y, o.w, o.h);
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = "rgba(255,255,255,.20)";
+        ctx.fillStyle = "rgba(255,255,255,.08)";
+        ctx.fillRect(o.x+3, o.y+3, o.w-6, o.h-6);
+        ctx.restore();
+      }
+
+      // coins
+      for(const c of world.pickups){
+        ctx.save();
+        const bob = Math.sin(c.t*6) * 4;
+        const x = c.x, y = c.y + bob;
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = "rgba(0,255,209,.40)";
+        ctx.fillStyle = "rgba(0,255,209,.16)";
+        ctx.beginPath();
+        ctx.arc(x,y,c.r,0,Math.PI*2);
+        ctx.fill();
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = "rgba(255,255,255,.25)";
+        ctx.strokeStyle = "rgba(255,255,255,.22)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // sparks
+      for(const s of world.sparks){
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, s.life*1.6);
+        ctx.fillStyle = "rgba(255,255,255,.70)";
+        ctx.fillRect(s.x, s.y, 2, 2);
+        ctx.restore();
+      }
+    }
+
+    function update(dt){
+      const w = cv.getBoundingClientRect().width;
+
+      // speed ramp
+      world.speed += dt * (proMode ? 16 : 12);
+      world.score += dt * (proMode ? 26 : 22);
+
+      // dash
+      if(player.dashCd > 0) player.dashCd = Math.max(0, player.dashCd - dt);
+      if(player.dashT > 0){
+        player.dashT = Math.max(0, player.dashT - dt);
+      }
+
+      // gravity & jump hold
+      const grav = proMode ? 1700 : 1600;
+      player.vy += grav * dt;
+
+      // jump hold gives a tiny lift at start
+      if(jumpHold && player.vy < 0){
+        player.vy -= (proMode ? 420 : 360) * dt;
+      }
+
+      player.y += player.vy * dt;
+
+      // ground collision
+      const gy = groundY();
+      if(player.y >= gy){
+        player.y = gy;
+        player.vy = 0;
+        player.onGround = true;
+      }
+
+      // spawn obstacles
+      world.spawnT -= dt;
+      const spawnRate = proMode ? 0.72 : 0.9;
+      if(world.spawnT <= 0){
+        spawnObstacle();
+        world.spawnT = spawnRate - Math.min(0.25, world.score/600);
+      }
+
+      // spawn coins
+      world.coinT -= dt;
+      if(world.coinT <= 0){
+        spawnCoin();
+        world.coinT = 0.65 + Math.random()*0.55;
+      }
+
+      // move obstacles/pickups
+      const dashBoost = (player.dashT > 0) ? (proMode ? 1.55 : 1.45) : 1;
+      const sp = world.speed * dashBoost;
+
+      for(const o of world.obstacles){
+        o.x -= sp * dt;
+      }
+      for(const c of world.pickups){
+        c.x -= sp * dt;
+        c.t += dt;
+      }
+
+      // particles
+      for(const s of world.sparks){
+        s.x += s.vx * dt;
+        s.y += s.vy * dt;
+        s.vx *= (1 - 2.4*dt);
+        s.vy *= (1 - 2.4*dt);
+        s.life -= dt;
+      }
+      world.sparks = world.sparks.filter(s=>s.life > 0);
+
+      // cleanup
+      world.obstacles = world.obstacles.filter(o=> o.x + o.w > -30);
+      world.pickups = world.pickups.filter(c=> c.x + c.r > -30);
+
+      // collisions
+      const pW = player.w, pH = player.h;
+      const pX = player.x, pY = player.y;
+
+      // coin pickup
+      for(let i=world.pickups.length-1;i>=0;i--){
+        const c = world.pickups[i];
+        const bob = Math.sin(c.t*6) * 4;
+        const cx = c.x, cy = c.y + bob;
+        const dx = (pX+pW/2) - cx;
+        const dy = (pY+pH/2) - cy;
+        if(dx*dx + dy*dy < (c.r + 18)*(c.r + 18)){
+          world.pickups.splice(i,1);
+          world.coins += 1;
+          fxBurst(cx, cy, 8);
+        }
+      }
+
+      // obstacle hit (if dashing, allow 1 pass with tiny window? nope keep fair)
+      for(const o of world.obstacles){
+        if(aabb(pX,pY,pW,pH,o.x,o.y,o.w,o.h)){
+          gameOver();
+          break;
+        }
+      }
+
+      syncUI();
+    }
+
+    function loop(ts){
+      if(!running) return;
+      const t = ts/1000;
+      const dt = Math.min(0.033, t - tPrev || 0.016);
+      tPrev = t;
+
+      update(dt);
+      render(dt);
+
+      requestAnimationFrame(loop);
     }
 
     function start(){
-      if (S.running) return;
-      S.running = true;
-      S.score = 0;
-      S.combo = 1;
-      S.time = 30;
-      hint.style.display = "none";
-      modeBadge.textContent = "PLAY";
-      updateUI();
-      setTargetPos();
-
-      clearInterval(S.timer);
-      S.timer = setInterval(() => {
-        S.time -= 1;
-        timeEl.textContent = S.time + "s";
-        if (S.time <= 0) end();
-      }, 1000);
+      resetWorld();
+      hideOverlay();
+      running = true;
+      tPrev = performance.now()/1000;
+      requestAnimationFrame(loop);
     }
 
-    function end(){
-      S.running = false;
-      modeBadge.textContent = "END";
-      clearInterval(S.timer);
-      clearTimeout(S.missTimeout);
+    function gameOver(){
+      running = false;
+      best = Math.max(best, Math.floor(world.score));
+      localStorage.setItem(BEST_KEY, String(best));
+      syncUI();
 
-      // best
-      if (S.score > S.best) {
-        S.best = S.score;
-        localStorage.setItem("yna_best_score", String(S.best));
-        bestEl.textContent = S.best;
+      showOverlay(
+        "Game Over 💥",
+        `Score kamu <b>${Math.floor(world.score)}</b> • Coins <b>${world.coins}</b><br/>
+         Tekan <b>Start</b> untuk main lagi. Mode <b>${proMode ? "PRO" : "EASY"}</b> bisa kamu ganti di panel kanan.`
+      );
+    }
+
+    // shop (fun cards)
+    function claim(cost, name){
+      if(world.coins < cost){
+        ui.shopMsg.textContent = `Coins kurang 😿 butuh ${cost} coins.`;
+        return;
       }
-
-      hint.style.display = "block";
-      hint.innerHTML = `
-        <div class="h3" style="margin:0;">Game selesai</div>
-        <div class="muted" style="margin-top:6px;">Score kamu: <b>${S.score}</b> • Best: <b>${S.best}</b></div>
-      `;
+      world.coins -= cost;
+      ui.shopMsg.textContent = `✅ ${name} berhasil di-claim! (fun card)`;
+      fxBurst(player.x+10, player.y+10, 18);
+      syncUI();
     }
 
-    function reset(){
-      S.running = false;
-      clearInterval(S.timer);
-      clearTimeout(S.missTimeout);
-      S.score = 0;
-      S.combo = 1;
-      S.time = 30;
-      modeBadge.textContent = "READY";
-      updateUI();
-      hint.style.display = "block";
-      hint.innerHTML = `
-        <div class="h3" style="margin:0;">Tap untuk mulai</div>
-        <div class="muted" style="margin-top:6px;">(di HP tinggal tap layar)</div>
-      `;
-      target.style.left = "50%";
-      target.style.top = "50%";
-      target.style.transform = "translate(-50%,-50%) scale(.9)";
-      target.style.opacity = ".6";
-      // reset transform wrapper
-      setTimeout(() => {
-        target.style.transform = "scale(.9)";
-      }, 50);
-    }
-
-    // click target
-    target.addEventListener("click", () => {
-      if (!S.running) return start();
-      // hit
-      S.score += 10 * S.combo;
-      S.combo = clamp(S.combo + 1, 1, 12);
-      updateUI();
-
-      // micro animation
-      target.style.transform = "scale(1.15)";
-      target.style.opacity = "1";
-      setTimeout(() => {
-        if (S.running) setTargetPos();
-      }, 60);
+    // buttons
+    document.getElementById("startBtn").addEventListener("click", start);
+    document.getElementById("toggleMode").addEventListener("click", ()=>{
+      proMode = !proMode;
+      setMode();
+      showOverlay(
+        "Mode diganti ✅",
+        `Sekarang <b>${proMode ? "PRO" : "EASY"}</b>.<br/>Klik <b>Start</b> untuk mulai.`
+      );
+    });
+    document.getElementById("resetBest").addEventListener("click", ()=>{
+      best = 0;
+      localStorage.setItem(BEST_KEY, "0");
+      syncUI();
+      ui.shopMsg.textContent = "Best direset ✅";
     });
 
-    // tap arena to start
-    arena.addEventListener("click", (e) => {
-      if (!S.running && e.target !== target) start();
-    });
+    document.getElementById("buy1").addEventListener("click", ()=>claim(30, "Voucher Diskon Panel"));
+    document.getElementById("buy2").addEventListener("click", ()=>claim(60, "Sticker YNA Neon"));
+    document.getElementById("buy3").addEventListener("click", ()=>claim(120, "Title Buyer VIP"));
 
-    btnStart.addEventListener("click", start);
-    btnReset.addEventListener("click", reset);
-
-    reset();
+    // initial overlay
+    showOverlay("Siap main? 🚀", "Tekan <b>SPACE</b> buat lompat. Tahan buat lompat lebih tinggi. Di HP: tap kiri (jump), kanan (dash).");
+    resetWorld();
+    render(0);
   </script>
-
-  <style>
-    /* khusus game (biar clean, tetap pakai theme) */
-    .game-arena{
-      position:relative;
-      height: 52vh;
-      min-height: 340px;
-      max-height: 520px;
-      border-radius: 22px;
-      overflow:hidden;
-      background: radial-gradient(1200px 500px at 20% 10%, rgba(120,120,255,.20), transparent 55%),
-                  radial-gradient(900px 480px at 90% 80%, rgba(0,255,200,.12), transparent 60%),
-                  rgba(255,255,255,.03);
-      border: 1px solid rgba(255,255,255,.10);
-      box-shadow: 0 20px 60px rgba(0,0,0,.35);
-      backdrop-filter: blur(8px);
-    }
-    .game-target{
-      position:absolute;
-      width:64px;height:64px;
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,.22);
-      background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.26), rgba(255,255,255,.06));
-      box-shadow: 0 18px 50px rgba(0,0,0,.35);
-      cursor:pointer;
-      transition: transform .12s ease, opacity .12s ease;
-      outline:none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .game-hint{
-      position:absolute;
-      inset:0;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      flex-direction:column;
-      text-align:center;
-      padding: 16px;
-      pointer-events:none;
-    }
-    @media (max-width: 860px){
-      .game-arena{ height: 50vh; min-height: 320px; }
-    }
-  </style>
 </body>
-</html>
+  </html>
