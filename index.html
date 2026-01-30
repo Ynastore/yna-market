@@ -6,13 +6,155 @@
   <meta name="theme-color" content="#0b0f19"/>
   <title>YNA STORE — Digital Store</title>
   <meta name="description" content="YNA STORE — Platform digital terpercaya: jasa edit HD, top up all game, script bot WhatsApp, panel, sewa bot, dan layanan digital lainnya." />
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="assets/style.css"/>
+
+  <!-- upgrade: animasi & komponen modern biar langsung jalan walau style.css belum diubah -->
+  <style>
+    :root{
+      --bg:#0b0f19;
+      --card: rgba(255,255,255,.06);
+      --card2: rgba(255,255,255,.10);
+      --line: rgba(255,255,255,.10);
+      --txt: rgba(255,255,255,.90);
+      --muted: rgba(255,255,255,.68);
+      --glow: 0 0 40px rgba(122, 162, 255, .28);
+    }
+    body{background:var(--bg); color:var(--txt)}
+    .muted{color:var(--muted)}
+    .container{position:relative}
+    .topbar{position:sticky; top:0; z-index:50; backdrop-filter: blur(14px); background:rgba(11,15,25,.55); border-bottom:1px solid var(--line)}
+    .nav a{position:relative}
+    .nav a::after{content:""; position:absolute; left:0; bottom:-6px; width:0; height:2px; background:rgba(255,255,255,.65); transition:.25s}
+    .nav a:hover::after{width:100%}
+    .nav__cta{border:1px solid var(--line); background: rgba(255,255,255,.06); padding:.55rem .85rem; border-radius:999px}
+    .hamburger{border:1px solid var(--line); background: rgba(255,255,255,.06); border-radius:999px; padding:.6rem .7rem}
+    .hamburger span{display:block; width:18px; height:2px; background:rgba(255,255,255,.85); margin:4px 0; border-radius:99px; transition:.25s}
+
+    /* loader smooth */
+    .loader{position:fixed; inset:0; display:grid; place-items:center; background:radial-gradient(900px 600px at 50% 35%, rgba(120,140,255,.16), transparent 60%), #070a12; z-index:999}
+    .loader__card{width:min(520px,92vw); border:1px solid rgba(255,255,255,.10); border-radius:20px; padding:22px; background:rgba(255,255,255,.06); backdrop-filter: blur(18px); box-shadow: var(--glow)}
+    .loader__logo{width:54px; height:54px; border-radius:16px; display:grid; place-items:center; font-weight:800; letter-spacing:.08em; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12)}
+    .loader__text{margin-top:12px}
+    .loader__title{font-size:20px; font-weight:800}
+    .loader__sub{font-size:13px; color:var(--muted); margin-top:4px}
+    .loader__bar{margin-top:16px; height:10px; border-radius:999px; background:rgba(255,255,255,.06); overflow:hidden; border:1px solid rgba(255,255,255,.10)}
+    .loader__bar span{display:block; height:100%; width:45%; background:linear-gradient(90deg, rgba(255,255,255,.15), rgba(255,255,255,.55)); animation: loadbar 1.35s ease-in-out infinite}
+    @keyframes loadbar{0%{transform:translateX(-120%)} 100%{transform:translateX(260%)}}
+    .fadeout{animation: fadeout .65s ease forwards}
+    @keyframes fadeout{to{opacity:0; visibility:hidden}}
+
+    /* hero entrance / slowmotion text */
+    .hero{padding-top:34px}
+    .hero__left, .hero__right{opacity:0; transform: translateY(16px); animation: enter .95s cubic-bezier(.2,.9,.2,1) forwards}
+    .hero__right{animation-delay:.12s}
+    @keyframes enter{to{opacity:1; transform:none}}
+
+    .chip{display:inline-flex; align-items:center; gap:10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); padding:.5rem .75rem; border-radius:999px}
+    .chip__ping{width:10px; height:10px; border-radius:50%; background:rgba(90,255,170,.9); box-shadow:0 0 18px rgba(90,255,170,.45); position:relative}
+    .chip__ping::after{content:""; position:absolute; inset:-7px; border-radius:999px; border:1px solid rgba(90,255,170,.35); animation: ping 1.6s ease infinite}
+    @keyframes ping{0%{transform:scale(.4); opacity:0} 25%{opacity:1} 100%{transform:scale(1.35); opacity:0}}
+
+    .title{line-height:1.05}
+    .floatTitle{display:inline-block; animation: floaty 3.2s ease-in-out infinite}
+    @keyframes floaty{0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)}}
+
+    /* “anime” mini chibi (generic svg, bukan karakter tertentu) */
+    .titleMark{position:relative; display:inline-block}
+    .chibiWrap{position:absolute; top:-26px; left:0; right:0; display:flex; justify-content:space-between; pointer-events:none; opacity:.92}
+    .chibi{width:30px; height:30px; filter: drop-shadow(0 10px 18px rgba(0,0,0,.35)); transform-origin: bottom center; animation: sit 2.8s ease-in-out infinite}
+    .chibi:nth-child(2){animation-delay:.15s}
+    @keyframes sit{0%,100%{transform:translateY(0) rotate(-1deg)} 50%{transform:translateY(-2px) rotate(1deg)}}
+
+    .card--glass{background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.10); backdrop-filter: blur(16px); box-shadow: var(--glow)}
+    .mini{border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.06); border-radius:16px; padding:14px; transition:.25s; transform: translateZ(0)}
+    .mini:hover{transform: translateY(-3px); border-color: rgba(255,255,255,.18)}
+    .feature{border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.06); border-radius:16px; padding:14px; transition:.25s}
+    .feature:hover{border-color: rgba(255,255,255,.18)}
+
+    /* scroll reveal */
+    .reveal{opacity:0; transform: translateY(14px); transition: .7s cubic-bezier(.2,.9,.2,1)}
+    .reveal.show{opacity:1; transform:none}
+
+    /* popup join group */
+    .overlay{position:fixed; inset:0; z-index:90; display:none}
+    .overlay.on{display:block}
+    .overlay__bg{position:absolute; inset:0; background:rgba(0,0,0,.35); backdrop-filter: blur(12px)}
+    .joinPop{
+      position:absolute; left:50%; top:18px; transform:translateX(-50%) translateY(-20px);
+      width:min(720px, 92vw);
+      border-radius:18px; border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.08);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--glow);
+      padding:16px 16px;
+      opacity:0;
+      transition: .55s cubic-bezier(.2,.9,.2,1);
+    }
+    .overlay.on .joinPop{opacity:1; transform:translateX(-50%) translateY(0)}
+    .joinPop__row{display:flex; align-items:center; justify-content:space-between; gap:12px}
+    .joinPop__t{font-weight:900; letter-spacing:.02em}
+    .joinPop__s{color:var(--muted); font-size:13px; margin-top:4px}
+    .iconBtn{border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); border-radius:12px; padding:8px 10px; cursor:pointer}
+    .btnRow{display:flex; gap:10px; margin-top:12px; flex-wrap:wrap}
+    .btnLike{
+      display:inline-flex; align-items:center; gap:10px; padding:.7rem .95rem; border-radius:14px;
+      border:1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.08);
+      text-decoration:none; color:var(--txt)
+    }
+    .btnLike:hover{border-color: rgba(255,255,255,.22)}
+    .btnLike.primary{background: rgba(255,255,255,.14)}
+    .kbd{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size:12px; padding:.15rem .45rem; border-radius:8px; border:1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06)}
+
+    /* mobile nav: keluar 1 per 1 */
+    @media (max-width: 860px){
+      .nav{
+        position:fixed; left:12px; right:12px; top:70px;
+        border-radius:18px; border:1px solid rgba(255,255,255,.10);
+        background: rgba(11,15,25,.82);
+        backdrop-filter: blur(16px);
+        padding:14px;
+        display:none;
+      }
+      .nav.on{display:block}
+      .nav a{
+        display:block; padding:12px 12px; border-radius:14px;
+        border:1px solid rgba(255,255,255,.08);
+        background: rgba(255,255,255,.05);
+        margin:10px 0;
+        opacity:0; transform: translateY(-8px);
+      }
+      .nav.on a{animation: drop .45s cubic-bezier(.2,.9,.2,1) forwards}
+      .nav.on a:nth-child(1){animation-delay:.02s}
+      .nav.on a:nth-child(2){animation-delay:.06s}
+      .nav.on a:nth-child(3){animation-delay:.10s}
+      .nav.on a:nth-child(4){animation-delay:.14s}
+      .nav.on a:nth-child(5){animation-delay:.18s}
+      .nav.on a:nth-child(6){animation-delay:.22s}
+      .nav.on a:nth-child(7){animation-delay:.26s}
+      .nav.on a:nth-child(8){animation-delay:.30s}
+      @keyframes drop{to{opacity:1; transform:none}}
+    }
+
+    /* sound prompt */
+    .soundDock{
+      position:fixed; right:14px; bottom:14px; z-index:70;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.08);
+      backdrop-filter: blur(14px);
+      border-radius:16px;
+      padding:10px 12px;
+      display:flex; align-items:center; gap:10px;
+      box-shadow: var(--glow);
+    }
+    .soundDock button{cursor:pointer}
+  </style>
 </head>
 
 <body class="app">
   <!-- LOADER -->
-  <div id="loader" class="loader">
+  <div id="loader" class="loader" aria-hidden="true">
     <div class="loader__card">
       <div class="loader__logo">YNA</div>
       <div class="loader__text">
@@ -25,6 +167,32 @@
 
   <!-- BACKGROUND FX -->
   <canvas id="snow" class="snow"></canvas>
+
+  <!-- POPUP JOIN GROUP (blur background) -->
+  <div id="joinOverlay" class="overlay" role="dialog" aria-modal="true" aria-label="Join Grup Resmi YNA STORE">
+    <div class="overlay__bg" id="joinBg"></div>
+    <div class="joinPop">
+      <div class="joinPop__row">
+        <div>
+          <div class="joinPop__t">JOIN GRUP RESMI YNA STORE</div>
+          <div class="joinPop__s">Info terbaru, update produk, dan support buyer. Klik tombol di bawah.</div>
+        </div>
+        <button class="iconBtn" id="joinClose" aria-label="Tutup">✕</button>
+      </div>
+
+      <div class="btnRow">
+        <a class="btnLike primary" id="joinGo" href="https://chat.whatsapp.com/JYlAqqZQh07HupHeeQHMBF" target="_blank" rel="noopener">
+          🔗 Join Grup
+        </a>
+        <a class="btnLike" href="https://wa.me/6283173403262" target="_blank" rel="noopener">
+          💬 Chat Owner
+        </a>
+        <span class="btnLike" style="cursor:default">
+          Tips: kalau audio belum nyala, klik <span class="kbd">Sound ON</span>
+        </span>
+      </div>
+    </div>
+  </div>
 
   <!-- TOP NAV -->
   <header class="topbar">
@@ -54,21 +222,47 @@
   <main class="container">
     <section class="hero">
       <div class="hero__left">
-        <div class="chip">
+        <div class="chip reveal">
           <span class="chip__ping"></span>
           <span>Trusted • Aman • Fast Response</span>
         </div>
 
-        <h1 class="title">
-          Selamat Datang di <span class="grad">YNA STORE</span>
+        <h1 class="title reveal" style="margin-top:14px">
+          <span class="floatTitle">WELCOME TO</span><br>
+          <span class="titleMark">
+            <span class="grad">YNA STORE</span>
+            <!-- chibi svg duduk di atas huruf (generic, bukan karakter tertentu) -->
+            <span class="chibiWrap" aria-hidden="true">
+              <!-- chibi 1 -->
+              <svg class="chibi" viewBox="0 0 64 64" fill="none">
+                <circle cx="32" cy="22" r="12" fill="rgba(255,255,255,.85)"/>
+                <path d="M18 38c3-6 10-10 14-10s11 4 14 10" fill="rgba(255,255,255,.22)"/>
+                <path d="M22 22c2-6 18-6 20 0" stroke="rgba(0,0,0,.18)" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="28" cy="22" r="2" fill="rgba(0,0,0,.45)"/>
+                <circle cx="36" cy="22" r="2" fill="rgba(0,0,0,.45)"/>
+                <path d="M29 27c2 2 4 2 6 0" stroke="rgba(0,0,0,.35)" stroke-width="2" stroke-linecap="round"/>
+                <path d="M24 40c0 7 16 7 16 0" stroke="rgba(255,255,255,.30)" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+              <!-- chibi 2 -->
+              <svg class="chibi" viewBox="0 0 64 64" fill="none">
+                <circle cx="32" cy="22" r="12" fill="rgba(255,255,255,.85)"/>
+                <path d="M18 38c3-6 10-10 14-10s11 4 14 10" fill="rgba(255,255,255,.22)"/>
+                <path d="M20 20c5-10 19-10 24 0" stroke="rgba(0,0,0,.18)" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="28" cy="22" r="2" fill="rgba(0,0,0,.45)"/>
+                <circle cx="36" cy="22" r="2" fill="rgba(0,0,0,.45)"/>
+                <path d="M28 28c3 3 5 3 8 0" stroke="rgba(0,0,0,.35)" stroke-width="2" stroke-linecap="round"/>
+                <path d="M22 40c0 7 20 7 20 0" stroke="rgba(255,255,255,.30)" stroke-width="3" stroke-linecap="round"/>
+              </svg>
+            </span>
+          </span>
         </h1>
 
-        <p class="subtitle">
-          Platform digital terpercaya dan aman. YNA STORE menyediakan jasa edit HD,
-          top up all game, script bot WhatsApp, panel, sewa bot, dan layanan digital lainnya.
+        <p class="subtitle reveal">
+          Kami menyediakan banyak produk/jasa untuk membantu melengkapi kebutuhan digital kamu —
+          dari <b>panel</b>, <b>script bot</b>, <b>sewa bot</b>, sampai layanan digital lainnya.
         </p>
 
-        <div class="hero__actions">
+        <div class="hero__actions reveal">
           <a class="btn btn--primary" href="produk.html">
             Lihat Produk
             <span class="btn__glow"></span>
@@ -76,7 +270,7 @@
           <a class="btn btn--ghost" href="promo.html">Cek Promo</a>
         </div>
 
-        <div class="quick">
+        <div class="quick reveal">
           <div class="quick__item">
             <div class="quick__k">Website</div>
             <div class="quick__v">
@@ -97,7 +291,7 @@
       </div>
 
       <div class="hero__right">
-        <div class="card card--glass">
+        <div class="card card--glass reveal">
           <div class="card__head">
             <div class="card__title">Siapa itu YNA STORE?</div>
             <div class="badge">Official</div>
@@ -111,100 +305,84 @@
             <b>BOT YNA AI</b>, dan <b>BOT STORE YNA</b>.
           </p>
 
-          <div class="grid2">
-            <a class="mini" href="order-panel.html">
+          <div class="grid2" style="margin-top:14px">
+            <a class="mini reveal" href="order-panel.html">
               <div class="mini__icon">⚙️</div>
               <div class="mini__txt">
                 <div class="mini__t">Order Panel</div>
                 <div class="mini__s">Auto create + perpanjang</div>
               </div>
             </a>
-            <a class="mini" href="order-script.html">
+            <a class="mini reveal" href="order-script.html">
               <div class="mini__icon">📦</div>
               <div class="mini__txt">
                 <div class="mini__t">Order Script</div>
                 <div class="mini__s">Link download otomatis</div>
               </div>
             </a>
-            <a class="mini" href="order-sewa.html">
+            <a class="mini reveal" href="order-sewa.html">
               <div class="mini__icon">🤖</div>
               <div class="mini__txt">
                 <div class="mini__t">Sewa Bot</div>
                 <div class="mini__s">Masukin bot ke grup</div>
               </div>
             </a>
-            <a class="mini" href="chat.html">
-              <div class="mini__icon">💬</div>
-              <div class="mini__txt">
-                <div class="mini__t">Chat Yna AI</div>
-                <div class="mini__s">Bantuan order & info</div>
-              </div>
-            </a>
-          </div>
-        </div>
-
-        <div class="card card--accent">
-          <div class="card__head">
-            <div class="card__title">Metode Pembayaran</div>
-            <div class="badge badge--soft">QRIS / Manual</div>
           </div>
 
-          <div class="paygrid">
-            <div class="pay">
-              <div class="pay__k">QRIS</div>
-              <div class="pay__v">via Pakasir (otomatis)</div>
+          <div class="grid3" style="margin-top:14px">
+            <div class="feature reveal">
+              <div class="feature__icon">🧾</div>
+              <div class="feature__t">Payment Flow</div>
+              <div class="feature__s">QRIS + manual tersedia</div>
             </div>
-            <div class="pay">
-              <div class="pay__k">Dana</div>
-              <div class="pay__v">083899782574</div>
+            <div class="feature reveal">
+              <div class="feature__icon">🛡️</div>
+              <div class="feature__t">Aman</div>
+              <div class="feature__s">Proses sensitif di backend</div>
             </div>
-            <div class="pay">
-              <div class="pay__k">GoPay</div>
-              <div class="pay__v">083138675899</div>
+            <div class="feature reveal">
+              <div class="feature__icon">📱</div>
+              <div class="feature__t">Responsif</div>
+              <div class="feature__s">Mobile & desktop rapi</div>
             </div>
-          </div>
-
-          <div class="card__foot">
-            <a class="btn btn--small btn--primary" href="order-panel.html">Mulai Order</a>
-            <a class="btn btn--small btn--ghost" href="kontak.html">Kontak</a>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- FEATURES -->
-    <section class="section">
-      <div class="section__head">
-        <h2 class="h2">Kenapa YNA STORE?</h2>
-        <p class="muted">Rapi, cepat, dan dibuat untuk kebutuhan digital store.</p>
-      </div>
+    <!-- PARTNER SECTION -->
+    <section class="section reveal" style="margin-top:22px">
+      <div class="card card--glass">
+        <h2 class="h2">*LIST PARTNER YNA STORE 👥*</h2>
+        <div class="muted" style="margin-top:6px">
+          Resmi partner YNA STORE cuma nama/nomor di bawah. Beda? berarti clone/penipu! Harap berhati-hati dalam bertransaksi dan selalu cek nomor partner & nomor owner resmi di website YNA STORE.
+        </div>
 
-      <div class="features">
-        <div class="feature">
-          <div class="feature__icon">⚡</div>
-          <div class="feature__t">Fast Process</div>
-          <div class="feature__s">Order jelas + format rapih</div>
+        <div style="margin-top:14px; display:grid; gap:10px">
+          <div class="mini"><b>CICI STORE</b> — 0819-4631-1782</div>
+          <div class="mini"><b>EYMA STORE</b> — 6017-573 3841</div>
+          <div class="mini"><b>AR STORE</b> — 0895-3708-73976</div>
+          <div class="mini"><b>OHMYDIT STR</b> — 0856-3664-155</div>
+          <div class="mini"><b>CUWIE STORE</b> — 0859-7732-1507</div>
+          <div class="mini"><b>TIYARA274 STR</b> — 0813-5025-8345</div>
         </div>
-        <div class="feature">
-          <div class="feature__icon">🧾</div>
-          <div class="feature__t">Payment Flow</div>
-          <div class="feature__s">QRIS Pakasir + manual</div>
+
+        <div class="muted" style="margin-top:14px">
+          Mau join partner? langsung hubungi YNA STORE.
         </div>
-        <div class="feature">
-          <div class="feature__icon">🛡️</div>
-          <div class="feature__t">Aman</div>
-          <div class="feature__s">Data sensitif diproses backend</div>
-        </div>
-        <div class="feature">
-          <div class="feature__icon">📱</div>
-          <div class="feature__t">Responsif</div>
-          <div class="feature__s">Mobile & Desktop friendly</div>
+
+        <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap">
+          <a class="btn btn--primary" href="https://wa.me/6283173403262" target="_blank" rel="noopener">
+            Hubungi YNA STORE
+            <span class="btn__glow"></span>
+          </a>
+          <a class="btn btn--ghost" href="kontak.html">Halaman Kontak</a>
         </div>
       </div>
     </section>
 
     <!-- CTA -->
-    <section class="cta">
+    <section class="cta reveal">
       <div class="cta__box">
         <div>
           <div class="cta__t">Butuh order cepat?</div>
@@ -217,7 +395,7 @@
       </div>
     </section>
 
-    <footer class="footer">
+    <footer class="footer reveal">
       <div class="footer__grid">
         <div>
           <div class="footer__brand">YNA STORE</div>
@@ -251,11 +429,135 @@
     </footer>
   </main>
 
-  <!-- SOUND (optional, small click) -->
+  <!-- OPENING MUSIC (autoplay best-effort; browser bisa block, fallback tombol Sound ON) -->
+  <audio id="bgm" preload="auto" loop playsinline>
+    <source src="https://files.catbox.moe/4ldx67.mp4" type="audio/mp4">
+  </audio>
+
+  <!-- Sound helper (muncul jika autoplay diblok) -->
+  <div id="soundDock" class="soundDock" style="display:none">
+    <span class="muted">Audio</span>
+    <button class="iconBtn" id="soundBtn">🔊 Sound ON</button>
+  </div>
+
+  <!-- Keep existing app.js (kalau snow/loader kamu disana), tapi kita juga aman tanpa itu -->
+  <script src="assets/app.js"></script>
+
+  <script>
+    // ===== Year
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // ===== Loader (smooth)
+    window.addEventListener("load", ()=>{
+      const loader = document.getElementById("loader");
+      setTimeout(()=> loader.classList.add("fadeout"), 650);
+      setTimeout(()=> loader.remove(), 1350);
+    });
+
+    // ===== Scroll reveal
+    const io = new IntersectionObserver((entries)=>{
+      for(const e of entries){
+        if(e.isIntersecting) e.target.classList.add("show");
+      }
+    }, { threshold: 0.12 });
+    document.querySelectorAll(".reveal").forEach(el=> io.observe(el));
+
+    // ===== Mobile menu: keluar 1 per 1
+    const nav = document.getElementById("nav");
+    const ham = document.getElementById("hamburger");
+    ham?.addEventListener("click", ()=>{
+      nav.classList.toggle("on");
+      ham.classList.toggle("on");
+      // sound click kecil kalau kamu punya clickSound di assets (optional)
+      try{
+        const click = document.getElementById("clickSound");
+        if(click) { click.currentTime = 0; click.play().catch(()=>{}); }
+      }catch{}
+    });
+
+    // ===== Popup JOIN GRUP (muncul dari atas, blur)
+    const overlay = document.getElementById("joinOverlay");
+    const joinClose = document.getElementById("joinClose");
+    const joinBg = document.getElementById("joinBg");
+    const openJoin = ()=> overlay.classList.add("on");
+    const closeJoin = ()=> overlay.classList.remove("on");
+
+    // tampilkan sekali per device (biar ga ganggu terus)
+    setTimeout(()=>{
+      const seen = localStorage.getItem("yna_join_seen");
+      if(!seen){
+        openJoin();
+        localStorage.setItem("yna_join_seen","1");
+      }
+    }, 1200);
+
+    joinClose?.addEventListener("click", closeJoin);
+    joinBg?.addEventListener("click", closeJoin);
+
+    // ===== Opening music autoplay (best-effort)
+    const bgm = document.getElementById("bgm");
+    const dock = document.getElementById("soundDock");
+    const soundBtn = document.getElementById("soundBtn");
+
+    async function tryPlayBgm(){
+      if(!bgm) return;
+      bgm.volume = 0.65;
+      try{
+        await bgm.play();
+        if(dock) dock.style.display = "none";
+      }catch(err){
+        // autoplay diblok -> tampilkan tombol Sound ON
+        if(dock) dock.style.display = "flex";
+      }
+    }
+    // coba play pas load
+    document.addEventListener("DOMContentLoaded", tryPlayBgm);
+    // fallback: user interaction
+    soundBtn?.addEventListener("click", async ()=>{
+      try{ await bgm.play(); if(dock) dock.style.display = "none"; }catch{}
+    });
+    // juga unmute di klik pertama dimana aja
+    window.addEventListener("pointerdown", ()=>{ tryPlayBgm(); }, { once:true });
+
+    // ===== Snow canvas fallback (kalau app.js belum handle)
+    (function snowFallback(){
+      const c = document.getElementById("snow");
+      if(!c) return;
+      const ctx = c.getContext("2d");
+      let w,h,flakes=[];
+      function resize(){
+        w = c.width = window.innerWidth;
+        h = c.height = window.innerHeight;
+        if(flakes.length < 90){
+          flakes = Array.from({length: 90}, ()=>({
+            x: Math.random()*w, y: Math.random()*h,
+            r: 1+Math.random()*2.2, v: .4+Math.random()*1.1,
+            d: Math.random()*Math.PI*2
+          }));
+        }
+      }
+      function tick(){
+        ctx.clearRect(0,0,w,h);
+        ctx.fillStyle = "rgba(255,255,255,.55)";
+        for(const f of flakes){
+          f.d += 0.01;
+          f.y += f.v;
+          f.x += Math.sin(f.d)*0.35;
+          if(f.y > h+10){ f.y = -10; f.x = Math.random()*w; }
+          ctx.beginPath();
+          ctx.arc(f.x,f.y,f.r,0,Math.PI*2);
+          ctx.fill();
+        }
+        requestAnimationFrame(tick);
+      }
+      resize(); tick();
+      window.addEventListener("resize", resize);
+    })();
+  </script>
+
+  <!-- optional click sound (kalau file ada, kalau ga ada gapapa) -->
   <audio id="clickSound" preload="auto">
     <source src="assets/click.mp3" type="audio/mpeg">
   </audio>
-
-  <script src="assets/app.js"></script>
 </body>
-</html>
+  </html>
