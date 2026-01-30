@@ -2,129 +2,349 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Order Sewa Bot — YNA STORE</title>
-  <link rel="stylesheet" href="assets/style.css"/>
+  <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body class="app">
 
 <header class="topbar">
-  <div class="container topbar">
-    <a class="brand" href="index.html">
-      <span class="brand__dot"></span>
-      <span class="brand__name">YNA STORE</span>
-      <span class="brand__tag">Order Sewa Bot</span>
-    </a>
-  </div>
+  <a class="brand" href="index.html">
+    <span class="brand__dot"></span>
+    <span class="brand__name">YNA STORE</span>
+    <span class="brand__tag">Sewa Bot</span>
+  </a>
 </header>
 
 <main class="container">
   <section class="section">
-    <h2 class="h2">Sewa Bot (Auto)</h2>
+    <h2 class="h2">Sewa Bot YNA</h2>
     <p class="muted">
-      Isi data grup + nomor bot → bayar QRIS → setelah sukses invoice akan munculin tombol konfirmasi ke admin.
+      Isi data → pilih bot & durasi → QRIS muncul → setelah sukses, klik tombol untuk kirim laporan ke admin.
     </p>
 
     <div class="card card--glass">
-      <form id="sewaForm">
-        <label class="lbl">WhatsApp kamu</label>
-        <input class="inp" required id="wa" inputmode="numeric" placeholder="contoh: 0831xxxx"/>
+      <form id="sewaForm" autocomplete="off">
+        <label>Nama</label>
+        <input required id="name" placeholder="contoh: Andi" />
 
-        <label class="lbl">Pilih Bot</label>
-        <select class="inp" id="bot_key">
-          <option value="bot_store">BOT STORE YNA</option>
-          <option value="bot_md">BOT MD YNA</option>
-          <option value="bot_ynaai">BOT YNA AI BUTTON</option>
+        <label>WhatsApp</label>
+        <input required id="wa" placeholder="08xxxx / 62xxxx" />
+
+        <label>Link Grup (untuk dimasukkan bot)</label>
+        <input required id="group" placeholder="https://chat.whatsapp.com/xxxx" />
+
+        <label>Pilih Bot</label>
+        <select id="bot" required>
+          <option value="bot_store_yna">BOT STORE YNA</option>
+          <option value="bot_md_yna">BOT MD YNA</option>
+          <option value="bot_yna_ai_button">BOT YNA AI BUTTON</option>
         </select>
 
-        <label class="lbl">Durasi</label>
-        <select class="inp" id="dur_key">
-          <option value="1b">1 Bulan</option>
-          <option value="2b">2 Bulan</option>
-          <option value="3b">3 Bulan</option>
-          <option value="5b">5 Bulan</option>
-          <option value="1t">1 Tahun</option>
-          <option value="permanen">Permanen</option>
-        </select>
+        <label>Durasi</label>
+        <select id="duration" required></select>
 
-        <label class="lbl">Link Grup untuk dimasukin bot</label>
-        <input class="inp" required id="group_link" placeholder="https://chat.whatsapp.com/xxxxx"/>
+        <div class="card" style="margin-top:14px;">
+          <div class="muted" id="priceText">Harga: -</div>
+          <div class="muted" id="ruleText" style="margin-top:8px;line-height:1.5;">
+            <b>NOTE (WAJIB BACA)</b><br>
+            ✓ Bot wajib jadi admin<br>
+            ✓ Jangan spam command<br>
+            ✓ Tidak menerima grup di atas 500 member<br>
+            ✓ Garansi penuh selama masa sewa<br>
+            ✓ Kick bot = Sewa hangus<br>
+            ✓ Pindah grup maksimal 1x<br>
+            ✓ Potongan harga hanya berlaku untuk perpanjangan aktif
+          </div>
+        </div>
 
-        <label class="lbl">Nomor bot (yang mau dipakai)</label>
-        <input class="inp" required id="bot_number" inputmode="numeric" placeholder="contoh: 08xxxx"/>
-
-        <button class="btn btn--primary" type="submit">
+        <button id="btnPay" type="submit" class="btn btn--primary" style="margin-top:14px;">
           Bayar QRIS & Proses
           <span class="btn__glow"></span>
         </button>
+
+        <p id="msg" class="muted" style="margin-top:12px;"></p>
       </form>
     </div>
 
-    <div class="card" id="result" style="display:none;margin-top:16px;">
-      <h3 class="h3">Pembayaran QRIS</h3>
-      <div class="muted" id="payInfo" style="line-height:1.7"></div>
-      <div class="hero__actions" style="margin-top:14px;">
-        <a class="btn btn--primary" id="btnPay" target="_blank" rel="noopener">
-          <span class="btn__glow"></span>
-          Buka QRIS
-        </a>
-        <a class="btn btn--ghost" id="btnInvoice">Lihat Invoice</a>
+    <!-- QRIS -->
+    <div id="payBox" class="card" style="display:none;margin-top:16px;">
+      <h3 class="h3">QRIS Pembayaran</h3>
+      <div id="qris" style="margin-top:10px;"></div>
+      <p id="status" class="muted" style="margin-top:10px;">Menunggu...</p>
+      <p class="muted" id="orderInfo" style="margin-top:10px;"></p>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+        <button id="btnCopyOrder" class="btn" type="button">Copy Order ID</button>
+        <button id="btnReset" class="btn" type="button">Reset</button>
+      </div>
+      <p class="muted" style="margin-top:10px;">
+        Tips: Setelah scan & bayar, halaman ini update otomatis (tanpa refresh).
+      </p>
+    </div>
+
+    <!-- RESULT -->
+    <div id="resultBox" class="card" style="display:none;margin-top:16px;">
+      <h3 class="h3">✅ Pembayaran Berhasil</h3>
+      <div id="resultText" class="muted" style="margin-top:10px;white-space:pre-wrap;"></div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+        <a id="btnWa" class="btn btn--primary" href="#" target="_blank">Kirim ke WA Admin</a>
+        <button id="btnCopyMsg" class="btn" type="button">Copy Pesan</button>
       </div>
     </div>
 
     <div class="card" style="margin-top:16px;">
-      <b>Kontak YNA STORE</b><br>
-      WhatsApp: <a href="https://wa.me/6283173403262" target="_blank" rel="noopener">0831-7340-3262</a><br>
-      Website: <a href="https://ynastore.my.id" target="_blank" rel="noopener">ynastore.my.id</a>
+      <b>Kontak Admin:</b><br>
+      <a href="https://wa.me/6283173403262">WA 0831-7340-3262</a><br><br>
+
+      <b>Payment Manual:</b><br>
+      Dana: 083899782574<br>
+      GoPay: 083138675899
     </div>
   </section>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+
 <script>
-  const form = document.getElementById("sewaForm");
-  const result = document.getElementById("result");
-  const payInfo = document.getElementById("payInfo");
-  const btnPay = document.getElementById("btnPay");
-  const btnInvoice = document.getElementById("btnInvoice");
+function $(id){ return document.getElementById(id); }
 
-  function cleanWA(v){ return String(v||"").replace(/\D/g,""); }
+const ADMIN_WA = "6283173403262";
 
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+const BOT_LABEL = {
+  bot_store_yna: "BOT STORE YNA",
+  bot_md_yna: "BOT MD YNA",
+  bot_yna_ai_button: "BOT YNA AI BUTTON",
+};
 
-    const wa = cleanWA(document.getElementById("wa").value);
-    const bot_key = document.getElementById("bot_key").value;
-    const dur_key = document.getElementById("dur_key").value;
-    const group_link = document.getElementById("group_link").value.trim();
-    const bot_number = cleanWA(document.getElementById("bot_number").value);
+// harga sesuai list kamu
+const PRICING = {
+  bot_store_yna: {
+    "1": 12000, "2": 20000, "3": 35000, "5": 50000, "12": 85000, "perm": 150000
+  },
+  bot_md_yna: {
+    "1": 15000, "2": 25000, "3": 40000, "5": 60000, "12": 100000, "perm": 200000
+  },
+  bot_yna_ai_button: {
+    "1": 15000, "2": 25000, "3": 40000, "5": 60000, "12": 100000, "perm": 220000
+  }
+};
 
-    if(wa.length < 9) return alert("Nomor WhatsApp tidak valid.");
-    if(!group_link.startsWith("https://chat.whatsapp.com/")) return alert("Link grup WA tidak valid.");
-    if(bot_number.length < 9) return alert("Nomor bot tidak valid.");
+const DURATION_LABEL = {
+  "1": "1 Bulan",
+  "2": "2 Bulan",
+  "3": "3 Bulan",
+  "5": "5 Bulan",
+  "12": "1 Tahun",
+  "perm": "Permanen"
+};
 
-    try{
-      const r = await fetch("/api/order/create", {
-        method: "POST",
-        headers: { "Content-Type":"application/json" },
-        body: JSON.stringify({ type:"sewa", wa, bot_key, dur_key, group_link, bot_number })
-      });
-      const j = await r.json();
-      if(j.error) return alert(j.error);
+function normWA(input){
+  let s = (input||"").trim().replace(/\s+/g,'');
+  if (!s) return "";
+  if (s.startsWith("08")) s = "62" + s.slice(1);
+  s = s.replace(/\D/g,'');
+  return s;
+}
 
-      result.style.display = "block";
-      payInfo.innerHTML = `
-        <b>Order ID:</b> <code>${j.order_id}</code><br>
-        <b>Nominal:</b> <b>${Number(j.amount).toLocaleString("id-ID")}</b><br>
-        <b>Status:</b> Menunggu pembayaran
-      `;
-      btnPay.href = j.pay_url;
-      btnInvoice.href = `invoice.html?order_id=${encodeURIComponent(j.order_id)}`;
+function rupiah(n){
+  try { return new Intl.NumberFormat('id-ID').format(n); } catch { return String(n); }
+}
 
-      result.scrollIntoView({ behavior:"smooth" });
-    }catch(err){
-      alert("Gagal konek server: " + err.message);
-    }
+function isValidGroupLink(url){
+  const s = (url||"").trim();
+  // minimal cek format WA group
+  return /^https:\/\/chat\.whatsapp\.com\/[A-Za-z0-9]+$/.test(s);
+}
+
+function renderQR(qrString){
+  $("qris").innerHTML = "";
+  new QRCode($("qris"), { text: qrString, width: 220, height: 220 });
+}
+
+function setDisabled(dis){
+  $("name").disabled = dis;
+  $("wa").disabled = dis;
+  $("group").disabled = dis;
+  $("bot").disabled = dis;
+  $("duration").disabled = dis;
+  $("btnPay").disabled = dis;
+}
+
+function buildDurationOptions(botKey){
+  const sel = $("duration");
+  sel.innerHTML = "";
+  const priceMap = PRICING[botKey];
+  const order = ["1","2","3","5","12","perm"];
+  for(const k of order){
+    const opt = document.createElement("option");
+    opt.value = k;
+    opt.textContent = `${DURATION_LABEL[k]} — Rp${rupiah(priceMap[k])}`;
+    sel.appendChild(opt);
+  }
+}
+
+function currentPrice(){
+  const botKey = $("bot").value;
+  const durKey = $("duration").value;
+  return PRICING[botKey][durKey];
+}
+
+function updatePriceUI(){
+  const botKey = $("bot").value;
+  const durKey = $("duration").value;
+  const price = PRICING[botKey][durKey];
+  $("priceText").innerHTML = `<b>Harga:</b> Rp${rupiah(price)} (${BOT_LABEL[botKey]} • ${DURATION_LABEL[durKey]})`;
+}
+
+async function createOrder(payload){
+  const r = await fetch("/api/order-create",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify(payload)
   });
+  const d = await r.json();
+  if(!r.ok || d.error) throw new Error(d.error || "Gagal membuat order");
+  return d;
+}
+
+async function getStatus(order_id, amount){
+  const r = await fetch(`/api/order-status?order_id=${encodeURIComponent(order_id)}&amount=${encodeURIComponent(amount)}`);
+  const d = await r.json();
+  if(!r.ok || d.error) throw new Error(d.error || "Gagal cek status");
+  return d;
+}
+
+async function pollStatus(order_id, amount){
+  while(true){
+    const d = await getStatus(order_id, amount);
+    const st = d?.order?.status;
+    if(st === "completed") return d.order;
+    if(st === "failed") throw new Error("Transaksi gagal / dibatalkan");
+    $("status").innerText = "⏳ Menunggu pembayaran...";
+    await new Promise(x=>setTimeout(x, 4000));
+  }
+}
+
+// init
+buildDurationOptions($("bot").value);
+updatePriceUI();
+$("bot").addEventListener("change", ()=>{
+  buildDurationOptions($("bot").value);
+  updatePriceUI();
+});
+$("duration").addEventListener("change", updatePriceUI);
+
+let LAST = { order_id:"", amount:0, message:"" };
+
+$("btnCopyOrder").addEventListener("click", async ()=>{
+  if(!LAST.order_id) return alert("Belum ada Order ID.");
+  try{
+    await navigator.clipboard.writeText(LAST.order_id);
+    $("btnCopyOrder").textContent = "Copied ✅";
+    setTimeout(()=> $("btnCopyOrder").textContent = "Copy Order ID", 1200);
+  }catch{
+    alert("Gagal copy.");
+  }
+});
+
+$("btnCopyMsg").addEventListener("click", async ()=>{
+  if(!LAST.message) return alert("Belum ada pesan.");
+  try{
+    await navigator.clipboard.writeText(LAST.message);
+    $("btnCopyMsg").textContent = "Copied ✅";
+    setTimeout(()=> $("btnCopyMsg").textContent = "Copy Pesan", 1200);
+  }catch{
+    alert("Gagal copy.");
+  }
+});
+
+$("btnReset").addEventListener("click", ()=>{
+  location.reload();
+});
+
+$("sewaForm").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+
+  const msg = $("msg");
+  msg.textContent = "";
+  $("resultBox").style.display = "none";
+  $("resultText").textContent = "";
+
+  const name = $("name").value.trim();
+  const wa = normWA($("wa").value);
+  const group = $("group").value.trim();
+  const botKey = $("bot").value;
+  const durKey = $("duration").value;
+  const amount = currentPrice();
+
+  if(!name) return msg.textContent = "Nama wajib diisi.";
+  if(!wa || wa.length < 10) return msg.textContent = "WhatsApp tidak valid.";
+  if(!isValidGroupLink(group)) return msg.textContent = "Link grup tidak valid. Contoh: https://chat.whatsapp.com/xxxx";
+  if(!amount) return msg.textContent = "Harga tidak valid.";
+
+  $("payBox").style.display = "block";
+  $("status").innerText = "Membuat QRIS...";
+  $("orderInfo").innerText = "";
+  $("qris").innerHTML = "";
+  setDisabled(true);
+
+  try{
+    // payload lengkap (biar backend nggak bilang kurang lengkap)
+    const pay = await createOrder({
+      type: "sewa",
+      name,
+      wa,
+      group,
+      bot: botKey,
+      duration: durKey,
+      amount
+    });
+
+    LAST.order_id = pay.order_id;
+    LAST.amount = pay.amount;
+
+    $("orderInfo").innerHTML =
+      `<b>Order ID:</b> ${pay.order_id}<br>` +
+      `<b>Nominal:</b> Rp${rupiah(pay.amount)}<br>` +
+      `<span class="muted">Scan QRIS di bawah ini untuk bayar.</span>`;
+
+    renderQR(pay.qr_string);
+    $("status").innerText = "📲 Scan QRIS → bayar → tunggu konfirmasi...";
+
+    await pollStatus(pay.order_id, pay.amount);
+
+    $("status").innerText = "✅ Pembayaran sukses. Siapkan pesan ke admin...";
+
+    const botLabel = BOT_LABEL[botKey];
+    const durLabel = DURATION_LABEL[durKey];
+    const priceLabel = `Rp${rupiah(amount)}`;
+
+    const message =
+`hallo min yna, ${name} udh bayar di website untuk sewa bot ${botLabel} dengan durasi ${durLabel} harganya ${priceLabel}, ini data transaksi ku :
+Order ID: ${pay.order_id}
+Nominal: ${priceLabel}
+
+ini link grup :
+${group}
+
+mohon di proses min`;
+
+    LAST.message = message;
+
+    $("resultBox").style.display = "block";
+    $("resultText").textContent = message;
+
+    const waUrl = `https://wa.me/${ADMIN_WA}?text=${encodeURIComponent(message)}`;
+    $("btnWa").href = waUrl;
+
+    setDisabled(false);
+  }catch(err){
+    $("status").innerText = "❌ Gagal: " + (err.message || err);
+    setDisabled(false);
+  }
+});
 </script>
 
 </body>
