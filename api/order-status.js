@@ -1,29 +1,48 @@
-import fetch from "node-fetch";
-import { kv } from "@vercel/kv";
-
-async function pakasirDetail(order_id, amount) {
-  const url = `https://app.pakasir.com/api/transactiondetail?project=${encodeURIComponent(process.env.PAKASIR_SLUG)}&amount=${amount}&order_id=${encodeURIComponent(order_id)}&api_key=${encodeURIComponent(process.env.PAKASIR_APIKEY)}`;
-  const r = await fetch(url);
-  const j = await r.json();
-  return j?.transaction || null;
-}
-
 export default async function handler(req, res) {
-  const order_id = req.query.order_id;
-  if (!order_id) return res.status(400).json({ error: "order_id wajib" });
-
-  const order = await kv.get(`order:${order_id}`);
-  if (!order) return res.status(404).json({ error: "Order ID tidak ditemukan" });
-
-  // kalau webhook belum jalan, fallback cek ke pakasir
-  if (order.status !== "completed") {
-    const trx = await pakasirDetail(order_id, order.amount);
-    if (trx?.status === "completed") {
-      order.status = "completed";
-      order.completed_at = trx.completed_at;
-      await kv.set(`order:${order_id}`, order);
+  try {
+    const slug = process.env.PAKASIR_SLUG;
+    const apiKey = process.env.PAKASIR_APIKEY;
+    if (!slug || !apiKey) {
+      return res.status(500).json({ error: "PAKASIR env belum di-set di Vercel." });
     }
-  }
 
-  res.json({ ok: true, order });
+    const { order_id, amount } = req.query || {};
+    if (!order_id || !amount) {
+      return res.status(400).json({ error: "order_id & amount wajib." });
+    }
+
+    const amt = Number(amount);
+    if (!Number.isFinite(amt) || amt < 1000) {
+      return res.status(400).json({ error: "amount tidak valid." });
+    }
+
+    const url =
+      "https://app.pakasir.com/api/transactiondetail" +
+      `?project=${encodeURIComponent(slug)}` +
+      `&amount=${encodeURIComponent(String(amt))}` +
+      `&order_id=${encodeURIComponent(order_id)}` +
+      `&api_key=${encodeURIComponent(apiKey)}`;
+
+    const r = await fetch(url);
+    const data = await r.json().catch(() => ({}));
+
+    if (!r.ok) {
+      return res.status(500).json({ error: data?.message || "Pakasir status gagal." });
+    }
+
+    const tx = data?.transaction || {};
+    const status = tx?.status || "pending";
+
+    return res.status(200).json({
+      order: {
+        order_id: tx.order_id || order_id,
+        amount: tx.amount || amt,
+        status, // pending | completed | failed (dll tergantung Pakasir)
+        payment_method: tx.payment_method || "qris",
+        completed_at: tx.completed_at || null,
+      },
+    });
+  } catch (e) {
+    return res.status(500).json({ error: e?.message || "Server error" });
+  }
 }
