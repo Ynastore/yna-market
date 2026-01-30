@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Status Pembayaran — YNA STORE</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body class="app">
+
+<header class="topbar">
+  <a class="brand" href="index.html">
+    <span class="brand__dot"></span>
+    <span class="brand__name">YNA STORE</span>
+    <span class="brand__tag">Status</span>
+  </a>
+</header>
+
+<main class="container">
+  <section class="section">
+    <div class="card card--glass">
+      <h2 class="h2">Cek Status Pembayaran</h2>
+      <p id="info" class="muted"></p>
+
+      <div id="statusBox" class="card" style="display:none;margin-top:14px;">
+        <h3 id="statusTitle"></h3>
+        <p id="statusDesc" class="muted"></p>
+
+        <div id="successData" style="display:none;margin-top:12px;">
+          <hr style="opacity:.2;margin:14px 0;">
+          <b>✅ Pembayaran sukses.</b><br>
+          <div id="buyerData" style="margin-top:10px;"></div>
+
+          <div style="margin-top:12px;">
+            <a class="btn btn--primary" id="waAdmin" href="#">Lapor Admin</a>
+          </div>
+        </div>
+
+        <div id="pendingData" style="display:none;margin-top:12px;">
+          <hr style="opacity:.2;margin:14px 0;">
+          <b>⏳ Masih menunggu pembayaran.</b><br>
+          <p class="muted">Kalau sudah bayar, tunggu 5-20 detik lalu halaman ini akan update otomatis.</p>
+        </div>
+
+        <div id="failData" style="display:none;margin-top:12px;">
+          <hr style="opacity:.2;margin:14px 0;">
+          <b>❌ Pembayaran gagal / dibatalkan.</b><br>
+          <a class="btn btn--primary" href="order-panel.html" style="margin-top:10px;display:inline-block;">Coba Order Lagi</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  const ADMIN_WA = "6283173403262";
+
+  function qs(name){
+    return new URLSearchParams(location.search).get(name);
+  }
+
+  const order_id = qs("order_id");
+  const info = document.getElementById("info");
+  const box = document.getElementById("statusBox");
+  const title = document.getElementById("statusTitle");
+  const desc = document.getElementById("statusDesc");
+
+  const successData = document.getElementById("successData");
+  const pendingData = document.getElementById("pendingData");
+  const failData = document.getElementById("failData");
+
+  if(!order_id){
+    info.textContent = "Order ID tidak ditemukan.";
+  } else {
+    info.textContent = "Order ID: " + order_id;
+    box.style.display = "block";
+    poll();
+  }
+
+  async function poll(){
+    try{
+      const r = await fetch("/api/order/status?order_id=" + encodeURIComponent(order_id));
+      const data = await r.json();
+
+      // data: { ok:true, status:"pending|completed|failed", order:{...}, reveal?:{...} }
+      const st = data.status || "pending";
+
+      successData.style.display = "none";
+      pendingData.style.display = "none";
+      failData.style.display = "none";
+
+      if(st === "completed"){
+        title.textContent = "✅ SUCCESS";
+        desc.textContent = "Pembayaran berhasil. Data order sudah diproses.";
+
+        // Baru DI SINI kita tampilkan info sensitif (link panel & grup)
+        successData.style.display = "block";
+
+        const buyerData = document.getElementById("buyerData");
+        buyerData.innerHTML = `
+          <b>Username:</b> ${data.order?.username || "-"}<br>
+          <b>WA:</b> ${data.order?.wa || "-"}<br>
+          <b>RAM:</b> Rp${data.order?.ram || "-"}<br><br>
+          <b>Link Panel:</b> ${data.reveal?.panel_url || "(menunggu create panel)"}<br>
+          <b>Grup Buyer:</b> <a href="${data.reveal?.buyer_group || "#"}">Klik</a><br>
+        `;
+
+        const waText =
+`Halo min YNA,
+Saya sudah bayar ✅
+
+Order ID: ${order_id}
+Username: ${data.order?.username || "-"}
+WA: ${data.order?.wa || "-"}
+RAM: Rp${data.order?.ram || "-"}
+
+Tolong proses panel saya ya kak.`;
+
+        document.getElementById("waAdmin").href =
+          "https://wa.me/" + ADMIN_WA + "?text=" + encodeURIComponent(waText);
+
+        return; // stop polling
+      }
+
+      if(st === "failed"){
+        title.textContent = "❌ FAILED";
+        desc.textContent = "Transaksi gagal / dibatalkan.";
+        failData.style.display = "block";
+        return;
+      }
+
+      // pending
+      title.textContent = "⏳ PENDING";
+      desc.textContent = "Menunggu pembayaran...";
+      pendingData.style.display = "block";
+
+      setTimeout(poll, 3000);
+    }catch(e){
+      title.textContent = "⚠️ ERROR";
+      desc.textContent = "Gagal cek status. Reload halaman ini.";
+      setTimeout(poll, 5000);
+    }
+  }
+</script>
+</body>
+</html>
