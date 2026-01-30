@@ -223,26 +223,36 @@ $("panelForm").addEventListener("submit", async (e)=>{
     btn.textContent = "Menunggu pembayaran...";
 
     // 3) polling status sampai completed (FIX: kirim amount)
-    await pollStatus(pay.order_id, pay.amount);
+    await pollStatus(pay.order_id);
+document.getElementById("status").innerText = "✅ Pembayaran sukses! Memproses panel...";
 
-    $("status").innerText = "✅ Pembayaran sukses! Memproses panel...";
+const f = await fetch("/api/fulfill-panel", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    order_id: pay.order_id,
+    amount: pay.amount,     // PENTING: status pakasir butuh amount juga
+    wa,
+    username,
+    password
+  })
+});
+const fj = await f.json();
+if (!f.ok || fj.error) throw new Error(fj.error || "Gagal proses panel");
 
-    // 4) fulfill panel (aktifin nanti kalau backend udah ada)
-    // const f = await fetch(`/api/fulfill-panel?order_id=${encodeURIComponent(pay.order_id)}&amount=${encodeURIComponent(pay.amount)}`);
-    // const fj = await f.json();
-    // if(!f.ok || fj.error) throw new Error(fj.error || "Gagal proses panel");
-    //
-    // $("resultBox").style.display = "block";
-    // $("resultText").innerHTML = `
-    //   <b>Login Panel:</b> <a href="${fj.panel_url}" target="_blank">${fj.panel_url}</a><br>
-    //   <b>Username:</b> <code>${fj.username}</code><br>
-    //   <b>Password:</b> <code>${fj.password}</code><br>
-    //   <b>Server ID:</b> <code>${fj.server_id}</code><br><br>
-    //   <b>Grup Buyer:</b> <a href="${fj.buyer_group}" target="_blank">Klik join</a><br>
-    //   <b>Admin WA:</b> <a href="https://wa.me/6283173403262" target="_blank">0831-7340-3262</a>
-    // `;
+document.getElementById("resultBox").style.display = "block";
+document.getElementById("resultText").innerHTML = `
+  <b>Login Panel:</b> <a href="${fj.panel_url}" target="_blank">${fj.panel_url}</a><br>
+  <b>Username:</b> <code>${fj.username}</code><br>
+  <b>Password:</b> <code>${fj.password}</code><br>
+  <b>Server ID:</b> <code>${fj.server_id}</code><br><br>
+  <b>Grup Buyer:</b> <a href="${fj.buyer_group}" target="_blank">Klik join</a><br>
+  <b>Admin WA:</b> <a href="https://wa.me/${fj.admin_wa}" target="_blank">${fj.admin_wa}</a>
+`;
 
-    msg.textContent = "✅ Pembayaran sukses. (Selanjutnya: aktifkan backend fulfill-panel biar panel auto dibuat).";
+msg.textContent = "";
+btn.disabled = false;
+btn.textContent = "Bayar QRIS & Proses";
 
     setFormDisabled(false);
     btn.textContent = "Bayar QRIS & Proses";
