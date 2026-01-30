@@ -6,6 +6,7 @@
   <title>Order Panel — YNA STORE</title>
   <link rel="stylesheet" href="assets/style.css" />
 </head>
+
 <body class="app">
 
 <header class="topbar">
@@ -20,11 +21,12 @@
   <section class="section">
     <h2 class="h2">Order Panel VPS</h2>
     <p class="muted">
-      Isi data → pilih RAM → bayar QRIS → setelah sukses, data panel & grup baru muncul.
+      Isi data → pilih RAM → QRIS muncul di website → setelah sukses, data panel & link grup buyer baru muncul.
     </p>
 
     <div class="card card--glass">
       <form id="panelForm" autocomplete="off">
+
         <label>Username Panel</label>
         <input required id="username" placeholder="contoh: ynauser" minlength="3" maxlength="15" />
 
@@ -32,10 +34,10 @@
         <input id="password" placeholder="kosongkan biar auto" />
 
         <label>WhatsApp</label>
-        <input required id="wa" placeholder="08xxxx" />
+        <input required id="wa" placeholder="08xxxx / 62xxxx" />
 
         <label>Pilih RAM</label>
-        <select id="ram">
+        <select id="ram" required>
           <option value="20000">RAM 5 — Rp20.000</option>
           <option value="25000">RAM 8 — Rp25.000</option>
           <option value="30000">RAM 10 — Rp30.000</option>
@@ -51,9 +53,24 @@
       </form>
     </div>
 
+    <!-- AREA QRIS (muncul setelah klik Bayar) -->
+    <div id="payBox" class="card" style="display:none;margin-top:16px;">
+      <h3 class="h3">QRIS Pembayaran</h3>
+      <div id="qris" style="margin-top:10px;"></div>
+      <p id="status" class="muted" style="margin-top:10px;">Menunggu...</p>
+      <p class="muted" id="orderInfo" style="margin-top:10px;"></p>
+    </div>
+
+    <!-- HASIL (baru muncul kalau sukses bayar + backend fulfill sudah dibuat) -->
+    <div id="resultBox" class="card" style="display:none;margin-top:16px;">
+      <h3 class="h3">✅ Order Berhasil</h3>
+      <div id="resultText" class="muted" style="margin-top:10px;"></div>
+    </div>
+
     <div class="card" style="margin-top:16px;">
       <b>Kontak Admin:</b><br>
       <a href="https://wa.me/6283173403262">WA 0831-7340-3262</a><br><br>
+
       <b>Payment Manual:</b><br>
       Dana: 083899782574<br>
       GoPay: 083138675899
@@ -61,84 +78,38 @@
   </section>
 </main>
 
-<script>
-  function normWA(input){
-    let s = (input||"").trim().replace(/\s+/g,'');
-    if (!s) return "";
-    // ubah 08xxx -> 628xxx
-    if (s.startsWith("08")) s = "62" + s.slice(1);
-    s = s.replace(/\D/g,'');
-    return s;
-  }
-
-  function validUsername(u){
-    return /^[a-z0-9]{3,15}$/.test(u);
-  }
-
-  function autoPass(username){
-    const n = Math.floor(Math.random()*90)+10; // 10-99
-    return username + n;
-  }
-
-  async function createOrderPanel({wa, username, password, amount}){
-    const r = await fetch("/api/order/create",{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({
-        type:"panel",
-        wa,
-        username,
-        password,
-        ram: amount,
-        days: 30
-      })
-    });
-    const data = await r.json();
-    if(!r.ok || data.error) throw new Error(data.error || "Gagal membuat order");
-    return data; // {order_id, pay_url}
-  }
-
-  document.getElementById("panelForm").addEventListener("submit", async (e)=>{
-    e.preventDefault();
-
-    const msg = document.getElementById("msg");
-    const btn = document.getElementById("btnPay");
-
-    const username = document.getElementById("username").value.trim().toLowerCase();
-    let password = document.getElementById("password").value.trim();
-    const waRaw = document.getElementById("wa").value;
-    const wa = normWA(waRaw);
-    const amount = document.getElementById("ram").value;
-
-    msg.textContent = "";
-
-    if(!validUsername(username)){
-      msg.textContent = "Username tidak valid. Pakai huruf kecil & angka (3-15).";
-      return;
-    }
-    if(!wa || wa.length < 10){
-      msg.textContent = "Nomor WhatsApp tidak valid.";
-      return;
-    }
-    if(!password) password = autoPass(username);
-
-    btn.disabled = true;
-    btn.textContent = "Membuat invoice...";
-    try{
-      const { order_id, pay_url } = await createOrderPanel({wa, username, password, amount});
-      // langsung pindah ke halaman bayar Pakasir
-      // setelah bayar, user akan diarahkan balik ke /thanks.html?order_id=xxxx
-      window.location.href = pay_url;
-    }catch(err){
-      msg.textContent = "Error: " + (err.message || err);
-      btn.disabled = false;
-      btn.textContent = "Bayar QRIS & Proses";
-    }
-  });
-</script>
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 
 <script>
+/**
+ * CATATAN:
+ * - Halaman ini butuh BACKEND:
+ *   POST /api/order-create   -> balikin { order_id, amount, qr_string }
+ *   GET  /api/order-status?order_id=... -> balikin { order: { status: "pending|completed|failed" } }
+ *   (opsional) GET /api/fulfill-panel?order_id=... -> create/extend pterodactyl, lalu balikin detail login
+ */
+
+function normWA(input){
+  let s = (input||"").trim().replace(/\s+/g,'');
+  if (!s) return "";
+  if (s.startsWith("08")) s = "62" + s.slice(1);
+  s = s.replace(/\D/g,'');
+  return s;
+}
+
+function validUsername(u){
+  return /^[a-z0-9]{3,15}$/.test(u);
+}
+
+function autoPass(username){
+  const n = Math.floor(10 + Math.random()*90);
+  return `${username}${n}`;
+}
+
+function rupiah(n){
+  try { return new Intl.NumberFormat('id-ID').format(n); } catch { return String(n); }
+}
+
 async function createOrder(payload){
   const r = await fetch("/api/order-create",{
     method:"POST",
@@ -146,70 +117,132 @@ async function createOrder(payload){
     body: JSON.stringify(payload)
   });
   const d = await r.json();
-  if(d.error) throw new Error(d.error);
+  if(!r.ok || d.error) throw new Error(d.error || "Gagal membuat order");
+  return d;
+}
+
+async function getStatus(order_id){
+  const r = await fetch(`/api/order-status?order_id=${encodeURIComponent(order_id)}`);
+  const d = await r.json();
+  if(!r.ok || d.error) throw new Error(d.error || "Gagal cek status");
   return d;
 }
 
 function renderQR(qrString){
-  document.getElementById("qris").innerHTML = "";
-  new QRCode(document.getElementById("qris"), {
-    text: qrString,
-    width: 220,
-    height: 220
-  });
+  const el = document.getElementById("qris");
+  el.innerHTML = "";
+  new QRCode(el, { text: qrString, width: 220, height: 220 });
 }
 
 async function pollStatus(order_id){
   while(true){
-    const r = await fetch(`/api/order-status?order_id=${encodeURIComponent(order_id)}`);
-    const d = await r.json();
-    if(d?.order?.status === "completed") return d.order;
-    document.getElementById("status").innerText = "Menunggu pembayaran...";
+    const d = await getStatus(order_id);
+    const st = d?.order?.status;
+
+    if(st === "completed") return d.order;
+    if(st === "failed") throw new Error("Transaksi gagal / dibatalkan");
+
+    document.getElementById("status").innerText = "⏳ Menunggu pembayaran...";
     await new Promise(x=>setTimeout(x, 4000));
   }
 }
 
-// ====== CONNECT KE FORM PANEL ======
+// ====== MAIN SUBMIT ======
 document.getElementById("panelForm").addEventListener("submit", async (e)=>{
   e.preventDefault();
 
-  const username = document.getElementById("username").value.trim().toLowerCase();
-  const wa = document.getElementById("wa").value.trim();
-  const plan = document.getElementById("ram").value; // pastikan value="5"|"8"|"10"|"unlimited"
+  const msg = document.getElementById("msg");
+  const btn = document.getElementById("btnPay");
 
-  document.getElementById("payBox").style.display = "block";
+  const username = document.getElementById("username").value.trim().toLowerCase();
+  let password  = document.getElementById("password").value.trim();
+  const wa      = normWA(document.getElementById("wa").value);
+  const amount  = parseInt(document.getElementById("ram").value, 10);
+
+  msg.textContent = "";
+  document.getElementById("resultBox").style.display = "none";
+  document.getElementById("resultText").innerHTML = "";
+
+  if(!validUsername(username)){
+    msg.textContent = "Username tidak valid (huruf kecil + angka 3-15).";
+    return;
+  }
+  if(!wa || wa.length < 10){
+    msg.textContent = "Nomor WhatsApp tidak valid.";
+    return;
+  }
+  if(!password) password = autoPass(username);
+  if(!amount || amount < 1000){
+    msg.textContent = "Nominal tidak valid.";
+    return;
+  }
+
+  // tampilkan box QR
+  const payBox = document.getElementById("payBox");
+  payBox.style.display = "block";
   document.getElementById("status").innerText = "Membuat QRIS...";
+  document.getElementById("orderInfo").innerText = "";
+  document.getElementById("qris").innerHTML = "";
+
+  btn.disabled = true;
+  btn.textContent = "Menunggu pembayaran...";
 
   try{
-    // 1) Create order + dapat qr_string
+    // 1) buat order (backend bikin invoice ke Pakasir via API, balikin qr_string)
     const pay = await createOrder({
       type: "panel",
       wa,
       username,
-      plan
+      password,
+      amount
     });
 
     document.getElementById("orderInfo").innerHTML =
-      `<b>Order ID:</b> ${pay.order_id}<br><b>Nominal:</b> Rp${pay.amount}`;
+      `<b>Order ID:</b> ${pay.order_id}<br>` +
+      `<b>Nominal:</b> Rp${rupiah(pay.amount)}<br>` +
+      `<span class="muted">Scan QRIS di bawah ini untuk bayar.</span>`;
 
-    // 2) Render QR di website kamu
+    // 2) render QR langsung di website
     renderQR(pay.qr_string);
-    document.getElementById("status").innerText = "Scan QRIS lalu bayar. Menunggu konfirmasi...";
+    document.getElementById("status").innerText = "📲 Scan QRIS → bayar → tunggu konfirmasi otomatis...";
 
-    // 3) Poll status
-    const order = await pollStatus(pay.order_id);
+    // 3) polling status sampai completed
+    await pollStatus(pay.order_id);
 
-    document.getElementById("status").innerText = "Pembayaran sukses! Memproses panel...";
+    document.getElementById("status").innerText = "✅ Pembayaran sukses! Memproses panel...";
 
-    // 4) Setelah sukses bayar -> panggil fulfill (nanti kita buat)
+    // 4) (opsional) panggil fulfill-panel untuk create/extend Pterodactyl
+    // Kalau backend kamu sudah siap, UNCOMMENT:
+    //
     // const f = await fetch(`/api/fulfill-panel?order_id=${encodeURIComponent(pay.order_id)}`);
     // const fj = await f.json();
-    // tampilkan hasil login panel + grup buyer + wa admin
+    // if(!f.ok || fj.error) throw new Error(fj.error || "Gagal proses panel");
+    //
+    // document.getElementById("resultBox").style.display = "block";
+    // document.getElementById("resultText").innerHTML = `
+    //   <b>Login Panel:</b> <a href="${fj.panel_url}" target="_blank">${fj.panel_url}</a><br>
+    //   <b>Username:</b> <code>${fj.username}</code><br>
+    //   <b>Password:</b> <code>${fj.password}</code><br>
+    //   <b>Server ID:</b> <code>${fj.server_id}</code><br><br>
+    //   <b>Grup Buyer:</b> <a href="${fj.buyer_group}" target="_blank">Klik join</a><br>
+    //   <b>Admin WA:</b> <a href="https://wa.me/6283173403262" target="_blank">0831-7340-3262</a>
+    // `;
+    //
+    // msg.textContent = "";
+
+    // sementara (kalau fulfill belum ada):
+    msg.textContent = "Pembayaran sukses. Backend fulfill-panel belum diaktifkan (create panel otomatis).";
+
+    btn.disabled = false;
+    btn.textContent = "Bayar QRIS & Proses";
 
   }catch(err){
-    document.getElementById("status").innerText = "Gagal: " + (err.message || err);
+    document.getElementById("status").innerText = "❌ Gagal: " + (err.message || err);
+    btn.disabled = false;
+    btn.textContent = "Bayar QRIS & Proses";
   }
 });
 </script>
+
 </body>
 </html>
