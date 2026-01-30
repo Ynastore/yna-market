@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#0b0f19"/>
+  <title>Promo — YNA STORE</title>
+  <meta name="description" content="Promo YNA STORE — countdown realtime, update setiap hari/jam/menit/detik." />
+  <link rel="stylesheet" href="assets/style.css"/>
+</head>
+
+<body class="app">
+  <div id="loader" class="loader">
+    <div class="loader__card">
+      <div class="loader__logo">YNA</div>
+      <div class="loader__text">
+        <div class="loader__title">PROMO</div>
+        <div class="loader__sub">Loading promo…</div>
+      </div>
+      <div class="loader__bar"><span></span></div>
+    </div>
+  </div>
+
+  <canvas id="snow" class="snow"></canvas>
+
+  <header class="topbar">
+    <a class="brand" href="index.html">
+      <span class="brand__dot"></span>
+      <span class="brand__name">YNA STORE</span>
+      <span class="brand__tag">Promo</span>
+    </a>
+
+    <nav class="nav" id="nav">
+      <a href="index.html">Home</a>
+      <a href="produk.html">Produk</a>
+      <a href="order-panel.html">Order Panel</a>
+      <a href="order-script.html">Order Script</a>
+      <a href="order-sewa.html">Sewa Bot</a>
+      <a href="chat.html">Chat Yna AI</a>
+      <a href="kontak.html" class="nav__cta">Kontak</a>
+    </nav>
+
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <main class="container">
+    <section class="section" style="margin-top:0;">
+      <div class="section__head">
+        <div>
+          <h2 class="h2">Promo Hari Ini</h2>
+          <p class="muted">Countdown realtime — bisa kamu ubah kapan saja.</p>
+        </div>
+        <a class="btn btn--small btn--ghost" href="produk.html">Lihat Produk</a>
+      </div>
+
+      <div class="card card--glass">
+        <div class="card__head">
+          <div class="card__title" id="promoTitle">SPESIAL PROMO YNA STORE</div>
+          <div class="badge badge--soft" id="promoStatus">Aktif</div>
+        </div>
+
+        <p class="card__text" id="promoDesc">
+          Promo terbatas untuk layanan pilihan YNA STORE. Gunakan tombol di bawah untuk order cepat.
+        </p>
+
+        <div class="features" style="grid-template-columns: repeat(4, 1fr); margin-top:12px;">
+          <div class="feature">
+            <div class="feature__icon">🗓️</div>
+            <div class="feature__t">Berakhir</div>
+            <div class="feature__s" id="endAtTxt">—</div>
+          </div>
+          <div class="feature">
+            <div class="feature__icon">⏳</div>
+            <div class="feature__t">Sisa Waktu</div>
+            <div class="feature__s" id="leftTxt">—</div>
+          </div>
+          <div class="feature">
+            <div class="feature__icon">⚡</div>
+            <div class="feature__t">Update</div>
+            <div class="feature__s">Realtime</div>
+          </div>
+          <div class="feature">
+            <div class="feature__icon">✅</div>
+            <div class="feature__t">Order</div>
+            <div class="feature__s">Panel / Script / Sewa Bot</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:12px; background: rgba(255,255,255,.04);">
+          <div class="card__head">
+            <div class="card__title">Countdown</div>
+            <div class="badge" id="badgeCountdown">—</div>
+          </div>
+
+          <div class="features" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="feature">
+              <div class="feature__t">Hari</div>
+              <div class="feature__s"><span id="dd">00</span></div>
+            </div>
+            <div class="feature">
+              <div class="feature__t">Jam</div>
+              <div class="feature__s"><span id="hh">00</span></div>
+            </div>
+            <div class="feature">
+              <div class="feature__t">Menit</div>
+              <div class="feature__s"><span id="mm">00</span></div>
+            </div>
+            <div class="feature">
+              <div class="feature__t">Detik</div>
+              <div class="feature__s"><span id="ss">00</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero__actions" style="margin-top:14px;">
+          <a class="btn btn--primary" id="btnOrderPanel" href="order-panel.html">
+            Order Panel
+            <span class="btn__glow"></span>
+          </a>
+          <a class="btn btn--ghost" id="btnOrderScript" href="order-script.html">Order Script</a>
+          <a class="btn btn--ghost" id="btnOrderSewa" href="order-sewa.html">Sewa Bot</a>
+        </div>
+
+        <div class="quick" style="margin-top:8px;">
+          <div class="quick__item">
+            <div class="quick__k">Website</div>
+            <div class="quick__v"><a href="https://ynastore.my.id" target="_blank" rel="noopener">ynastore.my.id</a></div>
+          </div>
+          <div class="quick__item">
+            <div class="quick__k">WhatsApp</div>
+            <div class="quick__v"><a href="https://wa.me/6283173403262" target="_blank" rel="noopener">0831-7340-3262</a></div>
+          </div>
+          <div class="quick__item">
+            <div class="quick__k">Grup Buyer Panel</div>
+            <div class="quick__v"><a href="https://chat.whatsapp.com/GSlHNKIDJJoIPGhOp5zoWs" target="_blank" rel="noopener">Join Grup</a></div>
+          </div>
+        </div>
+      </div>
+
+      <section class="cta">
+        <div class="cta__box">
+          <div>
+            <div class="cta__t">Mau promo custom?</div>
+            <div class="cta__s">Atur tanggal/jam promo langsung di <b>assets/promo.js</b>.</div>
+          </div>
+          <a class="btn btn--primary" href="https://wa.me/6283173403262" target="_blank" rel="noopener">
+            Chat Admin
+            <span class="btn__glow"></span>
+          </a>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div class="footer__bottom">
+          <span>© <span id="year"></span> YNA STORE</span>
+          <span class="muted">Promo page • realtime</span>
+        </div>
+      </footer>
+    </section>
+  </main>
+
+  <audio id="clickSound" preload="auto">
+    <source src="assets/click.mp3" type="audio/mpeg">
+  </audio>
+
+  <script src="assets/app.js"></script>
+  <script src="assets/promo.js"></script>
+</body>
+</html>

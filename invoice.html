@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Invoice — YNA STORE</title>
+  <link rel="stylesheet" href="assets/style.css"/>
+</head>
+<body class="app">
+
+<header class="topbar">
+  <div class="container topbar">
+    <a class="brand" href="index.html">
+      <span class="brand__dot"></span>
+      <span class="brand__name">YNA STORE</span>
+      <span class="brand__tag">Invoice</span>
+    </a>
+  </div>
+</header>
+
+<main class="container">
+  <section class="section">
+    <h2 class="h2">Status Transaksi</h2>
+    <p class="muted" id="oid">Order ID: -</p>
+
+    <div class="card card--glass" id="statusCard">
+      <h3 class="h3" id="statusText">Mengecek pembayaran…</h3>
+      <p class="muted" id="statusDesc">Tunggu sebentar, sistem sedang verifikasi.</p>
+      <div class="hero__actions" style="margin-top:12px;">
+        <a class="btn btn--ghost" href="index.html">Beranda</a>
+        <button class="btn" id="btnRetry">Cek Lagi</button>
+      </div>
+    </div>
+
+    <!-- Data hanya muncul kalau sukses -->
+    <div class="card" id="dataCard" style="display:none;margin-top:16px;">
+      <h3 class="h3">Data Panel Kamu</h3>
+      <div id="dataBox" class="muted" style="line-height:1.7"></div>
+
+      <div class="hero__actions" style="margin-top:14px;">
+        <a class="btn btn--primary" id="btnJoin" target="_blank" rel="noopener">
+          <span class="btn__glow"></span>
+          Join Grup Buyer Panel
+        </a>
+        <a class="btn btn--primary" id="btnWa" target="_blank" rel="noopener">
+          <span class="btn__glow"></span>
+          Konfirmasi ke Admin
+        </a>
+      </div>
+    </div>
+
+  </section>
+</main>
+
+<script>
+  const params = new URLSearchParams(location.search);
+  const orderId = params.get("order_id") || "";
+  const oidEl = document.getElementById("oid");
+  const statusText = document.getElementById("statusText");
+  const statusDesc = document.getElementById("statusDesc");
+  const dataCard = document.getElementById("dataCard");
+  const dataBox = document.getElementById("dataBox");
+  const btnRetry = document.getElementById("btnRetry");
+
+  oidEl.textContent = "Order ID: " + (orderId || "-");
+
+  btnRetry.addEventListener("click", ()=> check());
+
+  async function check(){
+    if(!orderId){
+      statusText.textContent = "Order ID tidak ada";
+      statusDesc.textContent = "Buka pembayaran dari halaman order, lalu kembali ke sini.";
+      return;
+    }
+
+    statusText.textContent = "Mengecek pembayaran…";
+    statusDesc.textContent = "Tunggu sebentar, sistem sedang verifikasi.";
+    dataCard.style.display = "none";
+
+    try{
+      const r = await fetch(`/api/order/status?order_id=${encodeURIComponent(orderId)}`);
+      const j = await r.json();
+
+      if(j.error){
+        statusText.textContent = "Order tidak ditemukan";
+        statusDesc.textContent = j.error;
+        return;
+      }
+
+      const st = j.status;
+
+      if(st === "pending"){
+        statusText.textContent = "MENUNGGU PEMBAYARAN";
+        statusDesc.textContent = "Jika kamu sudah bayar, tunggu 5–15 detik lalu cek lagi.";
+        return;
+      }
+
+      if(st === "failed"){
+        statusText.textContent = "TRANSAKSI GAGAL";
+        statusDesc.textContent = "Pembayaran tidak masuk / nominal tidak sesuai. Silakan order ulang.";
+        return;
+      }
+
+      if(st === "completed"){
+        if(!j.fulfillment || !j.fulfillment.ok){
+          statusText.textContent = "PEMBAYARAN MASUK";
+          statusDesc.textContent = "Sedang menyiapkan panel… (cek lagi sebentar)";
+          return;
+        }
+
+        // sukses + data siap
+        statusText.textContent = "TRANSAKSI SUKSES ✅";
+        statusDesc.textContent = "Panel berhasil diproses. Simpan data ini baik-baik.";
+
+        const f = j.fulfillment;
+        const plan = f.plan === "unlimited" ? "Unlimited" : `RAM ${f.plan}`;
+        const passLine = f.password
+          ? `<b>Password:</b> <code>${f.password}</code><br>`
+          : `<b>Password:</b> (akun sudah ada, password tidak diubah)<br>`;
+
+        dataBox.innerHTML = `
+          <b>Login Panel:</b> <a target="_blank" rel="noopener" href="${f.panel_login}">${f.panel_login}</a><br>
+          <b>Username:</b> <code>${f.username}</code><br>
+          <b>Email:</b> <code>${f.email}</code><br>
+          ${passLine}
+          <b>Server ID:</b> <code>${f.server_id}</code><br>
+          <b>Paket:</b> ${plan}<br>
+        `;
+
+        // Baru muncul setelah sukses:
+        const groupLink = "https://chat.whatsapp.com/GSlHNKIDJJoIPGhOp5zoWs";
+        const waAdmin = "6283173403262";
+
+        document.getElementById("btnJoin").href = groupLink;
+
+        const waText =
+`Halo min YNA, saya sudah bayar PANEL.
+Order ID: ${orderId}
+Username: ${f.username}
+Server ID: ${f.server_id}
+Terima kasih.`;
+        document.getElementById("btnWa").href =
+          `https://wa.me/${waAdmin}?text=${encodeURIComponent(waText)}`;
+
+        dataCard.style.display = "block";
+        return;
+      }
+
+      // status lain
+      statusText.textContent = "STATUS: " + st;
+      statusDesc.textContent = "Silakan cek lagi.";
+
+    }catch(e){
+      statusText.textContent = "Gagal konek server";
+      statusDesc.textContent = e.message;
+    }
+  }
+
+  // auto polling
+  check();
+  setInterval(check, 5000);
+</script>
+
+</body>
+</html>

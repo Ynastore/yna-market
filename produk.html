@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#0b0f19"/>
+  <title>Produk & Jasa — YNA STORE</title>
+  <meta name="description" content="Daftar produk & jasa YNA STORE: panel, script bot, sewa bot, top up, APK premium, layanan digital lainnya." />
+  <link rel="stylesheet" href="assets/style.css"/>
+</head>
+
+<body class="app">
+  <div id="loader" class="loader">
+    <div class="loader__card">
+      <div class="loader__logo">YNA</div>
+      <div class="loader__text">
+        <div class="loader__title">PRODUK</div>
+        <div class="loader__sub">Loading catalog…</div>
+      </div>
+      <div class="loader__bar"><span></span></div>
+    </div>
+  </div>
+
+  <canvas id="snow" class="snow"></canvas>
+
+  <header class="topbar">
+    <a class="brand" href="index.html">
+      <span class="brand__dot"></span>
+      <span class="brand__name">YNA STORE</span>
+      <span class="brand__tag">Produk</span>
+    </a>
+
+    <nav class="nav" id="nav">
+      <a href="index.html">Home</a>
+      <a href="promo.html">Promo</a>
+      <a href="order-panel.html">Order Panel</a>
+      <a href="order-script.html">Order Script</a>
+      <a href="order-sewa.html">Sewa Bot</a>
+      <a href="chat.html">Chat Yna AI</a>
+      <a href="kontak.html" class="nav__cta">Kontak</a>
+    </nav>
+
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <main class="container">
+    <section class="section" style="margin-top:0;">
+      <div class="section__head">
+        <div>
+          <h2 class="h2">Daftar Produk & Jasa</h2>
+          <p class="muted">Pilih kategori → lanjut order via halaman order (QRIS Pakasir / manual).</p>
+        </div>
+        <a class="btn btn--small btn--ghost" href="https://wa.me/6283173403262" target="_blank" rel="noopener">Chat Admin</a>
+      </div>
+
+      <!-- QUICK CATEGORY -->
+      <div class="features" style="grid-template-columns: repeat(4, 1fr);">
+        <a class="feature" href="#panel">
+          <div class="feature__icon">⚙️</div>
+          <div class="feature__t">Panel</div>
+          <div class="feature__s">Auto create & extend</div>
+        </a>
+        <a class="feature" href="#script">
+          <div class="feature__icon">📦</div>
+          <div class="feature__t">Script Bot</div>
+          <div class="feature__s">MD / Store / YNA AI</div>
+        </a>
+        <a class="feature" href="#sewa">
+          <div class="feature__icon">🤖</div>
+          <div class="feature__t">Sewa Bot</div>
+          <div class="feature__s">Durasi fleksibel</div>
+        </a>
+        <a class="feature" href="#lainnya">
+          <div class="feature__icon">🛍️</div>
+          <div class="feature__t">Lainnya</div>
+          <div class="feature__s">APK / top up / jasa</div>
+        </a>
+      </div>
+
+      <!-- PANEL -->
+      <div class="card card--glass" id="panel" style="margin-top:14px;">
+        <div class="card__head">
+          <div class="card__title">⚙️ PANEL (VPS Legal)</div>
+          <div class="badge badge--soft">Auto Order</div>
+        </div>
+
+        <p class="card__text">
+          Paket RAM: 5 / 8 / 10 / Unlimited. Setelah pembayaran berhasil, sistem akan proses otomatis (create / extend).
+        </p>
+
+        <div class="features" style="grid-template-columns: repeat(4, 1fr);">
+          <div class="feature">
+            <div class="feature__t">RAM 5</div>
+            <div class="feature__s">Rp 20.000</div>
+          </div>
+          <div class="feature">
+            <div class="feature__t">RAM 8</div>
+            <div class="feature__s">Rp 25.000</div>
+          </div>
+          <div class="feature">
+            <div class="feature__t">RAM 10</div>
+            <div class="feature__s">Rp 30.000</div>
+          </div>
+          <div class="feature">
+            <div class="feature__t">Unlimited</div>
+            <div class="feature__s">Rp 35.000</div>
+          </div>
+        </div>
+
+        <div class="hero__actions" style="margin-top:12px;">
+          <a class="btn btn--primary" href="order-panel.html">
+            Order Panel
+            <span class="btn__glow"></span>
+          </a>
+          <a class="btn btn--ghost" href="https://chat.whatsapp.com/GSlHNKIDJJoIPGhOp5zoWs" target="_blank" rel="noopener">
+            Grup Buyer Panel
+          </a>
+        </div>
+      </div>
+
+      <!-- SCRIPT -->
+      <div class="card card--glass" id="script" style="margin-top:14px;">
+        <div class="card__head">
+          <div class="card__title">📦 SCRIPT BOT</div>
+          <div class="badge">Ready</div>
+        </div>
+
+        <div class="features" style="grid-template-columns: 1fr; gap:10px;">
+          <div class="feature">
+            <div class="feature__t">SC STORE — Bot Khusus Jualan</div>
+            <div class="feature__s">
+              ±200+ fitur fokus transaksi & katalog. Free Rename, Free Panel Unlimited (1 bulan), Garansi 6 bulan full setup.
+              <br><b>Harga: Rp 120.000</b>
+            </div>
+          </div>
+
+          <div class="feature">
+            <div class="feature__t">SC MD (Multi Device) — Serbaguna 1000+ fitur</div>
+            <div class="feature__s">
+              Game, RPG, fun, AI, downloader, store, tools, dll. Paling laris & stabil.
+              Free Rename, Free Panel Unlimited (1 bulan), Garansi 6 bulan full setup.
+              <br><b>Harga: Rp 150.000</b>
+            </div>
+          </div>
+
+          <div class="feature">
+            <div class="feature__t">SC YNA AI — Bot Paling Canggih (Baru)</div>
+            <div class="feature__s">
+              850+ fitur real AI. Sistem sewa, payment otomatis (atlantic), store otomatis, UI rapi & fast respond.
+              Free Rename, Free Panel Unlimited (1 bulan), Full Setup.
+              <br><b>Harga: Rp 180.000</b>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero__actions" style="margin-top:12px;">
+          <a class="btn btn--primary" href="order-script.html">
+            Order Script
+            <span class="btn__glow"></span>
+          </a>
+          <a class="btn btn--ghost" href="https://wa.me/6283173403262" target="_blank" rel="noopener">Tanya Admin</a>
+        </div>
+      </div>
+
+      <!-- SEWA -->
+      <div class="card card--glass" id="sewa" style="margin-top:14px;">
+        <div class="card__head">
+          <div class="card__title">🤖 SEWA BOT</div>
+          <div class="badge badge--soft">Best Seller</div>
+        </div>
+
+        <p class="card__text">
+          Bot wajib jadi admin. Tidak menerima grup di atas 500 member. Kick bot = sewa hangus.
+        </p>
+
+        <div class="features" style="grid-template-columns: 1fr; gap:10px;">
+          <div class="feature">
+            <div class="feature__t">BOT STORE YNA</div>
+            <div class="feature__s">
+              1 Bulan 12K • 2 Bulan 20K • 3 Bulan 35K • 5 Bulan 50K • 1 Tahun 85K • Permanen 150K
+            </div>
+          </div>
+          <div class="feature">
+            <div class="feature__t">BOT MD YNA</div>
+            <div class="feature__s">
+              1 Bulan 15K • 2 Bulan 25K • 3 Bulan 40K • 5 Bulan 60K • 1 Tahun 100K • Permanen 200K
+            </div>
+          </div>
+          <div class="feature">
+            <div class="feature__t">BOT YNA AI BUTTON</div>
+            <div class="feature__s">
+              1 Bulan 15K • 2 Bulan 25K • 3 Bulan 40K • 5 Bulan 60K • 1 Tahun 100K • Permanen 220K
+            </div>
+          </div>
+        </div>
+
+        <div class="hero__actions" style="margin-top:12px;">
+          <a class="btn btn--primary" href="order-sewa.html">
+            Sewa Bot
+            <span class="btn__glow"></span>
+          </a>
+          <a class="btn btn--ghost" href="https://wa.me/6283173403262" target="_blank" rel="noopener">Chat Admin</a>
+        </div>
+      </div>
+
+      <!-- LAINNYA (menu store list) -->
+      <div class="card card--glass" id="lainnya" style="margin-top:14px;">
+        <div class="card__head">
+          <div class="card__title">🛍️ PRODUK & JASA LAINNYA</div>
+          <div class="badge">Store Menu</div>
+        </div>
+
+        <p class="card__text">
+          Berikut daftar menu store (ringkas). Untuk tanya harga/detail, chat admin.
+        </p>
+
+        <div class="card" style="background: rgba(255,255,255,.04); border-radius:18px;">
+          <div class="muted" style="font-size:12px; margin-bottom:10px;">
+            List menu store (sesuai data kamu):
+          </div>
+
+          <div class="features" style="grid-template-columns: repeat(2, 1fr); gap:10px;">
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ AM</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ APPLE MUSIC</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ ATURAN SEWA BOT</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ BASTATION</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ BRAINLY</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ BUG WA</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ CANVA</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ CAPCUT</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ CC AM</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ CHATGPT</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ CONTOH RUMUS HD</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ DESAIN</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ DM FF</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ DM ML</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ FREE CC</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ GETCONTACT</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ INSHOT</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ IQIYI</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ JASA WEB</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ NETFLIX</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ NOKOS</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ PANEL</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ ROBUX</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ SEWA BOT</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ SPOTIFY</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ VPS</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ WETV</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ WINK</div></div>
+            <div class="feature"><div class="feature__s">𐚁๋࣭⭑ YOUTUBE</div></div>
+          </div>
+
+          <div class="muted" style="font-size:12px; margin-top:10px;">
+            (List lengkap bisa kamu tambah sendiri kalau mau.)
+          </div>
+        </div>
+
+        <div class="hero__actions" style="margin-top:12px;">
+          <a class="btn btn--primary" href="https://wa.me/6283173403262" target="_blank" rel="noopener">
+            Tanya Harga / Order
+            <span class="btn__glow"></span>
+          </a>
+          <a class="btn btn--ghost" href="promo.html">Lihat Promo</a>
+        </div>
+      </div>
+
+      <footer class="footer">
+        <div class="footer__bottom">
+          <span>© <span id="year"></span> YNA STORE</span>
+          <span class="muted">Produk & katalog</span>
+        </div>
+      </footer>
+    </section>
+  </main>
+
+  <audio id="clickSound" preload="auto">
+    <source src="assets/click.mp3" type="audio/mpeg">
+  </audio>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>

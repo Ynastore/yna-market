@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#0b0f19"/>
+  <title>YNA STORE — Digital Store</title>
+  <meta name="description" content="YNA STORE — Platform digital terpercaya: jasa edit HD, top up all game, script bot WhatsApp, panel, sewa bot, dan layanan digital lainnya." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="assets/style.css"/>
+</head>
+
+<body class="app">
+  <!-- LOADER -->
+  <div id="loader" class="loader">
+    <div class="loader__card">
+      <div class="loader__logo">YNA</div>
+      <div class="loader__text">
+        <div class="loader__title">YNA STORE</div>
+        <div class="loader__sub">Loading experience…</div>
+      </div>
+      <div class="loader__bar"><span></span></div>
+    </div>
+  </div>
+
+  <!-- BACKGROUND FX -->
+  <canvas id="snow" class="snow"></canvas>
+
+  <!-- TOP NAV -->
+  <header class="topbar">
+    <a class="brand" href="index.html" aria-label="YNA STORE Home">
+      <span class="brand__dot"></span>
+      <span class="brand__name">YNA STORE</span>
+      <span class="brand__tag">Digital Store</span>
+    </a>
+
+    <nav class="nav" id="nav">
+      <a href="promo.html">Promo</a>
+      <a href="produk.html">Produk</a>
+      <a href="order-panel.html">Order Panel</a>
+      <a href="order-script.html">Order Script</a>
+      <a href="order-sewa.html">Sewa Bot</a>
+      <a href="chat.html">Chat Yna AI</a>
+      <a href="game.html">Game</a>
+      <a href="kontak.html" class="nav__cta">Kontak</a>
+    </nav>
+
+    <button class="hamburger" id="hamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <!-- HERO -->
+  <main class="container">
+    <section class="hero">
+      <div class="hero__left">
+        <div class="chip">
+          <span class="chip__ping"></span>
+          <span>Trusted • Aman • Fast Response</span>
+        </div>
+
+        <h1 class="title">
+          Selamat Datang di <span class="grad">YNA STORE</span>
+        </h1>
+
+        <p class="subtitle">
+          Platform digital terpercaya dan aman. YNA STORE menyediakan jasa edit HD,
+          top up all game, script bot WhatsApp, panel, sewa bot, dan layanan digital lainnya.
+        </p>
+
+        <div class="hero__actions">
+          <a class="btn btn--primary" href="produk.html">
+            Lihat Produk
+            <span class="btn__glow"></span>
+          </a>
+          <a class="btn btn--ghost" href="promo.html">Cek Promo</a>
+        </div>
+
+        <div class="quick">
+          <div class="quick__item">
+            <div class="quick__k">Website</div>
+            <div class="quick__v">
+              <a href="https://ynastore.my.id" target="_blank" rel="noopener">ynastore.my.id</a>
+            </div>
+          </div>
+          <div class="quick__item">
+            <div class="quick__k">WhatsApp</div>
+            <div class="quick__v">
+              <a href="https://wa.me/6283173403262" target="_blank" rel="noopener">0831-7340-3262</a>
+            </div>
+          </div>
+          <div class="quick__item">
+            <div class="quick__k">Order</div>
+            <div class="quick__v">Panel • Script • Sewa Bot</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero__right">
+        <div class="card card--glass">
+          <div class="card__head">
+            <div class="card__title">Siapa itu YNA STORE?</div>
+            <div class="badge">Official</div>
+          </div>
+
+          <p class="card__text">
+            YNA STORE adalah platform digital yang dipimpin oleh <b>Tabayyuna Muharrama (YNA)</b>,
+            ketua komunitas <b>Marga Flaw Sync</b> dan Ketua Guild Free Fire <b>XELVARA</b>.
+            Menyediakan produk digital seperti script bot MD, jasa edit HD, dan top up berbagai game.
+            YNA juga dikenal sebagai developer script bot cerdas seperti <b>BOT MD YNA</b>,
+            <b>BOT YNA AI</b>, dan <b>BOT STORE YNA</b>.
+          </p>
+
+          <div class="grid2">
+            <a class="mini" href="order-panel.html">
+              <div class="mini__icon">⚙️</div>
+              <div class="mini__txt">
+                <div class="mini__t">Order Panel</div>
+                <div class="mini__s">Auto create + perpanjang</div>
+              </div>
+            </a>
+            <a class="mini" href="order-script.html">
+              <div class="mini__icon">📦</div>
+              <div class="mini__txt">
+                <div class="mini__t">Order Script</div>
+                <div class="mini__s">Link download otomatis</div>
+              </div>
+            </a>
+            <a class="mini" href="order-sewa.html">
+              <div class="mini__icon">🤖</div>
+              <div class="mini__txt">
+                <div class="mini__t">Sewa Bot</div>
+                <div class="mini__s">Masukin bot ke grup</div>
+              </div>
+            </a>
+            <a class="mini" href="chat.html">
+              <div class="mini__icon">💬</div>
+              <div class="mini__txt">
+                <div class="mini__t">Chat Yna AI</div>
+                <div class="mini__s">Bantuan order & info</div>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <div class="card card--accent">
+          <div class="card__head">
+            <div class="card__title">Metode Pembayaran</div>
+            <div class="badge badge--soft">QRIS / Manual</div>
+          </div>
+
+          <div class="paygrid">
+            <div class="pay">
+              <div class="pay__k">QRIS</div>
+              <div class="pay__v">via Pakasir (otomatis)</div>
+            </div>
+            <div class="pay">
+              <div class="pay__k">Dana</div>
+              <div class="pay__v">083899782574</div>
+            </div>
+            <div class="pay">
+              <div class="pay__k">GoPay</div>
+              <div class="pay__v">083138675899</div>
+            </div>
+          </div>
+
+          <div class="card__foot">
+            <a class="btn btn--small btn--primary" href="order-panel.html">Mulai Order</a>
+            <a class="btn btn--small btn--ghost" href="kontak.html">Kontak</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="section">
+      <div class="section__head">
+        <h2 class="h2">Kenapa YNA STORE?</h2>
+        <p class="muted">Rapi, cepat, dan dibuat untuk kebutuhan digital store.</p>
+      </div>
+
+      <div class="features">
+        <div class="feature">
+          <div class="feature__icon">⚡</div>
+          <div class="feature__t">Fast Process</div>
+          <div class="feature__s">Order jelas + format rapih</div>
+        </div>
+        <div class="feature">
+          <div class="feature__icon">🧾</div>
+          <div class="feature__t">Payment Flow</div>
+          <div class="feature__s">QRIS Pakasir + manual</div>
+        </div>
+        <div class="feature">
+          <div class="feature__icon">🛡️</div>
+          <div class="feature__t">Aman</div>
+          <div class="feature__s">Data sensitif diproses backend</div>
+        </div>
+        <div class="feature">
+          <div class="feature__icon">📱</div>
+          <div class="feature__t">Responsif</div>
+          <div class="feature__s">Mobile & Desktop friendly</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta">
+      <div class="cta__box">
+        <div>
+          <div class="cta__t">Butuh order cepat?</div>
+          <div class="cta__s">Klik WhatsApp — format order otomatis tersedia di halaman order.</div>
+        </div>
+        <a class="btn btn--primary" href="https://wa.me/6283173403262" target="_blank" rel="noopener">
+          Chat WhatsApp
+          <span class="btn__glow"></span>
+        </a>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div class="footer__grid">
+        <div>
+          <div class="footer__brand">YNA STORE</div>
+          <div class="muted">Platform digital terpercaya & aman.</div>
+          <div class="muted">Website: <a href="https://ynastore.my.id" target="_blank" rel="noopener">ynastore.my.id</a></div>
+        </div>
+
+        <div>
+          <div class="footer__title">Kontak Cepat</div>
+          <ul class="footer__list">
+            <li><a href="https://wa.me/6283173403262" target="_blank" rel="noopener">WhatsApp: 0831-7340-3262</a></li>
+            <li><a href="https://wa.me/6283114941794" target="_blank" rel="noopener">WA Cadangan: 0831-1494-1794</a></li>
+            <li><a href="mailto:nadbrtpro@gmail.com">Gmail: nadbrtpro@gmail.com</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <div class="footer__title">Sosial</div>
+          <ul class="footer__list">
+            <li>IG: <a href="https://instagram.com/yna_store" target="_blank" rel="noopener">@yna_store</a></li>
+            <li>TikTok: <a href="https://tiktok.com/@yna_store_" target="_blank" rel="noopener">@yna_store_</a></li>
+            <li>Telegram: <a href="https://t.me/ynastore1" target="_blank" rel="noopener">@ynastore1</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer__bottom">
+        <span>© <span id="year"></span> YNA STORE</span>
+        <span class="muted">Built for modern digital store</span>
+      </div>
+    </footer>
+  </main>
+
+  <!-- SOUND (optional, small click) -->
+  <audio id="clickSound" preload="auto">
+    <source src="assets/click.mp3" type="audio/mpeg">
+  </audio>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>

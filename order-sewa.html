@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Order Sewa Bot — YNA STORE</title>
+  <link rel="stylesheet" href="assets/style.css"/>
+</head>
+<body class="app">
+
+<header class="topbar">
+  <div class="container topbar">
+    <a class="brand" href="index.html">
+      <span class="brand__dot"></span>
+      <span class="brand__name">YNA STORE</span>
+      <span class="brand__tag">Order Sewa Bot</span>
+    </a>
+  </div>
+</header>
+
+<main class="container">
+  <section class="section">
+    <h2 class="h2">Sewa Bot (Auto)</h2>
+    <p class="muted">
+      Isi data grup + nomor bot → bayar QRIS → setelah sukses invoice akan munculin tombol konfirmasi ke admin.
+    </p>
+
+    <div class="card card--glass">
+      <form id="sewaForm">
+        <label class="lbl">WhatsApp kamu</label>
+        <input class="inp" required id="wa" inputmode="numeric" placeholder="contoh: 0831xxxx"/>
+
+        <label class="lbl">Pilih Bot</label>
+        <select class="inp" id="bot_key">
+          <option value="bot_store">BOT STORE YNA</option>
+          <option value="bot_md">BOT MD YNA</option>
+          <option value="bot_ynaai">BOT YNA AI BUTTON</option>
+        </select>
+
+        <label class="lbl">Durasi</label>
+        <select class="inp" id="dur_key">
+          <option value="1b">1 Bulan</option>
+          <option value="2b">2 Bulan</option>
+          <option value="3b">3 Bulan</option>
+          <option value="5b">5 Bulan</option>
+          <option value="1t">1 Tahun</option>
+          <option value="permanen">Permanen</option>
+        </select>
+
+        <label class="lbl">Link Grup untuk dimasukin bot</label>
+        <input class="inp" required id="group_link" placeholder="https://chat.whatsapp.com/xxxxx"/>
+
+        <label class="lbl">Nomor bot (yang mau dipakai)</label>
+        <input class="inp" required id="bot_number" inputmode="numeric" placeholder="contoh: 08xxxx"/>
+
+        <button class="btn btn--primary" type="submit">
+          Bayar QRIS & Proses
+          <span class="btn__glow"></span>
+        </button>
+      </form>
+    </div>
+
+    <div class="card" id="result" style="display:none;margin-top:16px;">
+      <h3 class="h3">Pembayaran QRIS</h3>
+      <div class="muted" id="payInfo" style="line-height:1.7"></div>
+      <div class="hero__actions" style="margin-top:14px;">
+        <a class="btn btn--primary" id="btnPay" target="_blank" rel="noopener">
+          <span class="btn__glow"></span>
+          Buka QRIS
+        </a>
+        <a class="btn btn--ghost" id="btnInvoice">Lihat Invoice</a>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <b>Kontak YNA STORE</b><br>
+      WhatsApp: <a href="https://wa.me/6283173403262" target="_blank" rel="noopener">0831-7340-3262</a><br>
+      Website: <a href="https://ynastore.my.id" target="_blank" rel="noopener">ynastore.my.id</a>
+    </div>
+  </section>
+</main>
+
+<script>
+  const form = document.getElementById("sewaForm");
+  const result = document.getElementById("result");
+  const payInfo = document.getElementById("payInfo");
+  const btnPay = document.getElementById("btnPay");
+  const btnInvoice = document.getElementById("btnInvoice");
+
+  function cleanWA(v){ return String(v||"").replace(/\D/g,""); }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const wa = cleanWA(document.getElementById("wa").value);
+    const bot_key = document.getElementById("bot_key").value;
+    const dur_key = document.getElementById("dur_key").value;
+    const group_link = document.getElementById("group_link").value.trim();
+    const bot_number = cleanWA(document.getElementById("bot_number").value);
+
+    if(wa.length < 9) return alert("Nomor WhatsApp tidak valid.");
+    if(!group_link.startsWith("https://chat.whatsapp.com/")) return alert("Link grup WA tidak valid.");
+    if(bot_number.length < 9) return alert("Nomor bot tidak valid.");
+
+    try{
+      const r = await fetch("/api/order/create", {
+        method: "POST",
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify({ type:"sewa", wa, bot_key, dur_key, group_link, bot_number })
+      });
+      const j = await r.json();
+      if(j.error) return alert(j.error);
+
+      result.style.display = "block";
+      payInfo.innerHTML = `
+        <b>Order ID:</b> <code>${j.order_id}</code><br>
+        <b>Nominal:</b> <b>${Number(j.amount).toLocaleString("id-ID")}</b><br>
+        <b>Status:</b> Menunggu pembayaran
+      `;
+      btnPay.href = j.pay_url;
+      btnInvoice.href = `invoice.html?order_id=${encodeURIComponent(j.order_id)}`;
+
+      result.scrollIntoView({ behavior:"smooth" });
+    }catch(err){
+      alert("Gagal konek server: " + err.message);
+    }
+  });
+</script>
+
+</body>
+</html>
