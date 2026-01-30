@@ -2,143 +2,137 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Order Panel — YNA STORE</title>
-  <link rel="stylesheet" href="assets/style.css"/>
+  <link rel="stylesheet" href="assets/style.css" />
 </head>
 <body class="app">
 
 <header class="topbar">
-  <div class="container topbar">
-    <a class="brand" href="index.html">
-      <span class="brand__dot"></span>
-      <span class="brand__name">YNA STORE</span>
-      <span class="brand__tag">Order Panel</span>
-    </a>
-  </div>
+  <a class="brand" href="index.html">
+    <span class="brand__dot"></span>
+    <span class="brand__name">YNA STORE</span>
+    <span class="brand__tag">Order Panel</span>
+  </a>
 </header>
 
 <main class="container">
   <section class="section">
-    <h2 class="h2">Order Panel VPS (Auto Create)</h2>
+    <h2 class="h2">Order Panel VPS</h2>
     <p class="muted">
-      Isi data → pilih paket → bayar QRIS → sistem otomatis buat server di akun panel kamu.
+      Isi data → pilih RAM → bayar QRIS → setelah sukses, data panel & grup baru muncul.
     </p>
 
     <div class="card card--glass">
-      <form id="panelForm" class="form">
-        <label class="lbl">Username Panel</label>
-        <input class="inp" required id="username" maxlength="15" placeholder="contoh: ynauser (huruf kecil/angka)"/>
+      <form id="panelForm" autocomplete="off">
+        <label>Username Panel</label>
+        <input required id="username" placeholder="contoh: ynauser" minlength="3" maxlength="15" />
 
-        <label class="lbl">WhatsApp</label>
-        <input class="inp" required id="wa" inputmode="numeric" placeholder="contoh: 083173403262"/>
+        <label>Password</label>
+        <input id="password" placeholder="kosongkan biar auto" />
 
-        <label class="lbl">Pilih Paket</label>
-        <select class="inp" id="ram">
-          <option value="5">RAM 5 — Rp20.000</option>
-          <option value="8">RAM 8 — Rp25.000</option>
-          <option value="10">RAM 10 — Rp30.000</option>
-          <option value="unlimited">RAM Unlimited — Rp35.000</option>
+        <label>WhatsApp</label>
+        <input required id="wa" placeholder="08xxxx" />
+
+        <label>Pilih RAM</label>
+        <select id="ram">
+          <option value="20000">RAM 5 — Rp20.000</option>
+          <option value="25000">RAM 8 — Rp25.000</option>
+          <option value="30000">RAM 10 — Rp30.000</option>
+          <option value="35000">RAM Unlimited — Rp35.000</option>
         </select>
 
-        <button type="submit" class="btn btn--primary">
+        <button id="btnPay" type="submit" class="btn btn--primary">
           Bayar QRIS & Proses
           <span class="btn__glow"></span>
         </button>
 
-        <p class="muted" style="margin-top:10px;">
-          *Catatan:* Password panel akan otomatis dibuat kalau akun kamu belum ada.
-          Kalau akun sudah ada, password tidak diubah (demi keamanan).
-        </p>
+        <p id="msg" class="muted" style="margin-top:12px;"></p>
       </form>
     </div>
 
-    <div class="card" id="result" style="display:none;margin-top:16px;">
-      <h3 class="h3">Pembayaran QRIS</h3>
-      <div class="muted" id="payInfo" style="line-height:1.7"></div>
-      <div class="hero__actions" style="margin-top:14px;">
-        <a class="btn btn--primary" id="btnPay" target="_blank" rel="noopener">
-          <span class="btn__glow"></span>
-          Buka QRIS
-        </a>
-        <a class="btn btn--ghost" id="btnInvoice">
-          Lihat Invoice
-        </a>
-      </div>
-    </div>
-
     <div class="card" style="margin-top:16px;">
-      <b>Kontak YNA STORE</b><br>
-      WhatsApp: <a href="https://wa.me/6283173403262" target="_blank" rel="noopener">0831-7340-3262</a><br>
-      WA Cadangan: 0831-1494-1794<br>
-      Website: <a href="https://ynastore.my.id" target="_blank" rel="noopener">ynastore.my.id</a><br>
-      Manual Payment: Dana 083899782574 • GoPay 083138675899
+      <b>Kontak Admin:</b><br>
+      <a href="https://wa.me/6283173403262">WA 0831-7340-3262</a><br><br>
+      <b>Payment Manual:</b><br>
+      Dana: 083899782574<br>
+      GoPay: 083138675899
     </div>
   </section>
 </main>
 
 <script>
-  const form = document.getElementById("panelForm");
-  const result = document.getElementById("result");
-  const payInfo = document.getElementById("payInfo");
-  const btnPay = document.getElementById("btnPay");
-  const btnInvoice = document.getElementById("btnInvoice");
-
-  function cleanWA(v){
-    return String(v || "").replace(/\D/g, "");
+  function normWA(input){
+    let s = (input||"").trim().replace(/\s+/g,'');
+    if (!s) return "";
+    // ubah 08xxx -> 628xxx
+    if (s.startsWith("08")) s = "62" + s.slice(1);
+    s = s.replace(/\D/g,'');
+    return s;
   }
 
-  form.addEventListener("submit", async (e) => {
+  function validUsername(u){
+    return /^[a-z0-9]{3,15}$/.test(u);
+  }
+
+  function autoPass(username){
+    const n = Math.floor(Math.random()*90)+10; // 10-99
+    return username + n;
+  }
+
+  async function createOrderPanel({wa, username, password, amount}){
+    const r = await fetch("/api/order/create",{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({
+        type:"panel",
+        wa,
+        username,
+        password,
+        ram: amount,
+        days: 30
+      })
+    });
+    const data = await r.json();
+    if(!r.ok || data.error) throw new Error(data.error || "Gagal membuat order");
+    return data; // {order_id, pay_url}
+  }
+
+  document.getElementById("panelForm").addEventListener("submit", async (e)=>{
     e.preventDefault();
 
+    const msg = document.getElementById("msg");
+    const btn = document.getElementById("btnPay");
+
     const username = document.getElementById("username").value.trim().toLowerCase();
-    const wa = cleanWA(document.getElementById("wa").value);
-    const plan = document.getElementById("ram").value;
+    let password = document.getElementById("password").value.trim();
+    const waRaw = document.getElementById("wa").value;
+    const wa = normWA(waRaw);
+    const amount = document.getElementById("ram").value;
 
-    if(!/^[a-z0-9]{3,15}$/.test(username)){
-      alert("Username tidak valid. Hanya huruf kecil + angka (3-15 karakter).");
+    msg.textContent = "";
+
+    if(!validUsername(username)){
+      msg.textContent = "Username tidak valid. Pakai huruf kecil & angka (3-15).";
       return;
     }
-    if(wa.length < 9){
-      alert("Nomor WhatsApp tidak valid.");
+    if(!wa || wa.length < 10){
+      msg.textContent = "Nomor WhatsApp tidak valid.";
       return;
     }
+    if(!password) password = autoPass(username);
 
-    // create order ke backend
+    btn.disabled = true;
+    btn.textContent = "Membuat invoice...";
     try{
-      const r = await fetch("/api/order/create", {
-        method: "POST",
-        headers: { "Content-Type":"application/json" },
-        body: JSON.stringify({
-          type: "panel",
-          wa: wa,
-          username: username,
-          ram: plan,
-          days: 30
-        })
-      });
-
-      const j = await r.json();
-      if(j.error){
-        alert(j.error);
-        return;
-      }
-
-      result.style.display = "block";
-      payInfo.innerHTML = `
-        <b>Order ID:</b> <code>${j.order_id}</code><br>
-        <b>Nominal:</b> <b>${Number(j.amount).toLocaleString("id-ID")}</b><br>
-        <b>Status:</b> Menunggu pembayaran
-      `;
-
-      btnPay.href = j.pay_url;
-      btnInvoice.href = `invoice.html?order_id=${encodeURIComponent(j.order_id)}`;
-
-      // auto scroll ke hasil
-      result.scrollIntoView({ behavior:"smooth", block:"start" });
-
+      const { order_id, pay_url } = await createOrderPanel({wa, username, password, amount});
+      // langsung pindah ke halaman bayar Pakasir
+      // setelah bayar, user akan diarahkan balik ke /thanks.html?order_id=xxxx
+      window.location.href = pay_url;
     }catch(err){
-      alert("Gagal konek server: " + err.message);
+      msg.textContent = "Error: " + (err.message || err);
+      btn.disabled = false;
+      btn.textContent = "Bayar QRIS & Proses";
     }
   });
 </script>
