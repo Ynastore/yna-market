@@ -1,61 +1,93 @@
 export default async function handler(req, res) {
   try {
-    if (req.method !== "POST") {
-      return res.status(405).json({ error: "Method not allowed" });
+    if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+
+    const body = req.body || {};
+    const type = String(body.type || "").trim();
+
+    if (!type) return res.status(400).json({ error: "Payload kurang lengkap: type wajib" });
+
+    // wajib untuk semua transaksi
+    const amount = Number(body.amount);
+    const wa = String(body.wa || "").trim();
+
+    if (!amount || amount < 1000) return res.status(400).json({ error: "Payload kurang lengkap: amount tidak valid" });
+    if (!wa) return res.status(400).json({ error: "Payload kurang lengkap: wa wajib" });
+
+    // validasi spesifik per type
+    if (type === "panel") {
+      const username = String(body.username || "").trim().toLowerCase();
+      const password = String(body.password || "").trim();
+      if (!username || !password) {
+        return res.status(400).json({ error: "Payload kurang lengkap: username/password wajib untuk panel" });
+      }
     }
 
-    const { type, wa, username, password, amount } = req.body || {};
-    if (!type || !wa || !username || !amount) {
-      return res.status(400).json({ error: "Payload kurang lengkap." });
+    if (type === "script") {
+      // script minimal: name + product
+      const name = String(body.name || "").trim();
+      const product = String(body.product || body.script || "").trim();
+      if (!name || !product) {
+        return res.status(400).json({ error: "Payload kurang lengkap: name + product/script wajib untuk script" });
+      }
     }
 
-    const slug = process.env.PAKASIR_SLUG;
-    const apiKey = process.env.PAKASIR_APIKEY;
-    if (!slug || !apiKey) {
-      return res.status(500).json({ error: "PAKASIR env belum di-set di Vercel." });
+    if (type === "sewa") {
+      const name = String(body.name || "").trim();
+      const group = String(body.group || "").trim();
+      const bot = String(body.bot || "").trim();
+      const duration = String(body.duration || "").trim();
+      if (!name || !group || !bot || !duration) {
+        return res.status(400).json({ error: "Payload kurang lengkap: name/group/bot/duration wajib untuk sewa" });
+      }
     }
 
-    const order_id =
-      "YNA-" +
-      Date.now().toString(36).toUpperCase() +
-      "-" +
-      Math.random().toString(36).slice(2, 7).toUpperCase();
+    // bikin order_id
+    const order_id = makeOrderId(type);
 
-    const amt = Number(amount);
-    if (!Number.isFinite(amt) || amt < 1000) {
-      return res.status(400).json({ error: "Amount tidak valid." });
-    }
-
-    // Create QRIS via Pakasir API
-    const r = await fetch("https://app.pakasir.com/api/transactioncreate/qris", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        project: slug,
-        order_id,
-        amount: amt,
-        api_key: apiKey,
-      }),
-    });
-
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok) {
-      return res.status(500).json({ error: data?.message || "Pakasir create gagal." });
-    }
-
-    const qr_string = data?.payment?.payment_number; // ini QR string (bukan gambar)
-    const total_amount = data?.payment?.amount || amt;
-
-    if (!qr_string) {
-      return res.status(500).json({ error: "QR string kosong dari Pakasir." });
-    }
-
-    return res.status(200).json({
+    // create transaksi QRIS ke Pakasir via API
+    const pay = await pakasirCreateQRIS({
+      project: process.env.PAKASIR_SLUG,
+      api_key: process.env.PAKASIR_APIKEY,
       order_id,
-      amount: total_amount,
-      qr_string,
+      amount
     });
+
+    // respons ke frontend: qr_string untuk dicetak jadi QR
+    return res.status(200).json({
+      ok: true,
+      order_id,
+      amount,
+      qr_string: pay.payment_number,      // ini QR string
+      expired_at: pay.expired_at || null
+    });
+
   } catch (e) {
-    return res.status(500).json({ error: e?.message || "Server error" });
+    console.error("order-create error:", e);
+    return res.status(500).json({ error: "Server error: " + (e?.message || "unknown") });
   }
+}
+
+function makeOrderId(type){
+  const rand = Math.random().toString(36).slice(2, 7).toUpperCase();
+  const t = Date.now().toString(36).toUpperCase();
+  const prefix = type === "panel" ? "YNA-PNL" : type === "script" ? "YNA-SC" : "YNA-SEWA";
+  return `${prefix}-${t}-${rand}`;
+}
+
+async function pakasirCreateQRIS({ project, api_key, order_id, amount }){
+  if (!project || !api_key) throw new Error("Env PAKASIR_SLUG / PAKASIR_APIKEY belum di-set");
+
+  const url = `https://app.pakasir.com/api/transactioncreate/qris`;
+  const r = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ project, order_id, amount, api_key })
+  });
+
+  const j = await r.json().catch(()=> ({}));
+  if (!r.ok) throw new Error(j?.error || j?.message || "Pakasir error");
+  if (!j?.payment?.payment_number) throw new Error("Pakasir response invalid (payment_number kosong)");
+
+  return j.payment;
 }
