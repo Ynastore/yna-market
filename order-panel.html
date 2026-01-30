@@ -53,7 +53,7 @@
       </form>
     </div>
 
-    <!-- AREA QRIS (muncul setelah klik Bayar) -->
+    <!-- AREA QRIS -->
     <div id="payBox" class="card" style="display:none;margin-top:16px;">
       <h3 class="h3">QRIS Pembayaran</h3>
       <div id="qris" style="margin-top:10px;"></div>
@@ -61,7 +61,7 @@
       <p class="muted" id="orderInfo" style="margin-top:10px;"></p>
     </div>
 
-    <!-- HASIL (baru muncul kalau sukses bayar + backend fulfill sudah dibuat) -->
+    <!-- HASIL (muncul kalau fulfill sudah ada) -->
     <div id="resultBox" class="card" style="display:none;margin-top:16px;">
       <h3 class="h3">✅ Order Berhasil</h3>
       <div id="resultText" class="muted" style="margin-top:10px;"></div>
@@ -82,12 +82,14 @@
 
 <script>
 /**
- * CATATAN:
- * - Halaman ini butuh BACKEND:
- *   POST /api/order-create   -> balikin { order_id, amount, qr_string }
- *   GET  /api/order-status?order_id=... -> balikin { order: { status: "pending|completed|failed" } }
- *   (opsional) GET /api/fulfill-panel?order_id=... -> create/extend pterodactyl, lalu balikin detail login
+ * BACKEND WAJIB:
+ * - POST /api/order-create  -> { order_id, amount, qr_string }
+ * - GET  /api/order-status?order_id=...&amount=... -> { order: { status } }
+ * OPSIONAL (nanti):
+ * - GET /api/fulfill-panel?order_id=...&amount=... -> create/extend ptero, return detail login
  */
+
+function $(id){ return document.getElementById(id); }
 
 function normWA(input){
   let s = (input||"").trim().replace(/\s+/g,'');
@@ -110,6 +112,14 @@ function rupiah(n){
   try { return new Intl.NumberFormat('id-ID').format(n); } catch { return String(n); }
 }
 
+function setFormDisabled(disabled){
+  $("username").disabled = disabled;
+  $("password").disabled = disabled;
+  $("wa").disabled = disabled;
+  $("ram").disabled = disabled;
+  $("btnPay").disabled = disabled;
+}
+
 async function createOrder(payload){
   const r = await fetch("/api/order-create",{
     method:"POST",
@@ -121,47 +131,52 @@ async function createOrder(payload){
   return d;
 }
 
-async function getStatus(order_id){
-  const r = await fetch(`/api/order-status?order_id=${encodeURIComponent(order_id)}`);
+/**
+ * FIX PENTING:
+ * Pakasir transactiondetail BUTUH amount + order_id.
+ * Jadi status endpoint juga butuh amount.
+ */
+async function getStatus(order_id, amount){
+  const r = await fetch(`/api/order-status?order_id=${encodeURIComponent(order_id)}&amount=${encodeURIComponent(amount)}`);
   const d = await r.json();
   if(!r.ok || d.error) throw new Error(d.error || "Gagal cek status");
   return d;
 }
 
 function renderQR(qrString){
-  const el = document.getElementById("qris");
+  const el = $("qris");
   el.innerHTML = "";
   new QRCode(el, { text: qrString, width: 220, height: 220 });
 }
 
-async function pollStatus(order_id){
+async function pollStatus(order_id, amount){
   while(true){
-    const d = await getStatus(order_id);
+    const d = await getStatus(order_id, amount);
     const st = d?.order?.status;
 
     if(st === "completed") return d.order;
     if(st === "failed") throw new Error("Transaksi gagal / dibatalkan");
 
-    document.getElementById("status").innerText = "⏳ Menunggu pembayaran...";
+    $("status").innerText = "⏳ Menunggu pembayaran...";
     await new Promise(x=>setTimeout(x, 4000));
   }
 }
 
 // ====== MAIN SUBMIT ======
-document.getElementById("panelForm").addEventListener("submit", async (e)=>{
+$("panelForm").addEventListener("submit", async (e)=>{
   e.preventDefault();
 
-  const msg = document.getElementById("msg");
-  const btn = document.getElementById("btnPay");
+  const msg = $("msg");
+  const btn = $("btnPay");
 
-  const username = document.getElementById("username").value.trim().toLowerCase();
-  let password  = document.getElementById("password").value.trim();
-  const wa      = normWA(document.getElementById("wa").value);
-  const amount  = parseInt(document.getElementById("ram").value, 10);
+  const username = $("username").value.trim().toLowerCase();
+  let password  = $("password").value.trim();
+  const wa      = normWA($("wa").value);
+  const amount  = parseInt($("ram").value, 10);
 
   msg.textContent = "";
-  document.getElementById("resultBox").style.display = "none";
-  document.getElementById("resultText").innerHTML = "";
+  $("resultBox").style.display = "none";
+  $("resultText").innerHTML = "";
 
   if(!validUsername(username)){
     msg.textContent = "Username tidak valid (huruf kecil + angka 3-15).";
@@ -178,17 +193,16 @@ document.getElementById("panelForm").addEventListener("submit", async (e)=>{
   }
 
   // tampilkan box QR
-  const payBox = document.getElementById("payBox");
-  payBox.style.display = "block";
-  document.getElementById("status").innerText = "Membuat QRIS...";
-  document.getElementById("orderInfo").innerText = "";
-  document.getElementById("qris").innerHTML = "";
+  $("payBox").style.display = "block";
+  $("status").innerText = "Membuat QRIS...";
+  $("orderInfo").innerText = "";
+  $("qris").innerHTML = "";
 
-  btn.disabled = true;
-  btn.textContent = "Menunggu pembayaran...";
+  setFormDisabled(true);
+  btn.textContent = "Membuat invoice...";
 
   try{
-    // 1) buat order (backend bikin invoice ke Pakasir via API, balikin qr_string)
+    // 1) buat order (backend bikin transaksi pakasir via API, balikin qr_string)
     const pay = await createOrder({
       type: "panel",
       wa,
@@ -197,29 +211,29 @@ document.getElementById("panelForm").addEventListener("submit", async (e)=>{
       amount
     });
 
-    document.getElementById("orderInfo").innerHTML =
+    $("orderInfo").innerHTML =
       `<b>Order ID:</b> ${pay.order_id}<br>` +
       `<b>Nominal:</b> Rp${rupiah(pay.amount)}<br>` +
       `<span class="muted">Scan QRIS di bawah ini untuk bayar.</span>`;
 
     // 2) render QR langsung di website
     renderQR(pay.qr_string);
-    document.getElementById("status").innerText = "📲 Scan QRIS → bayar → tunggu konfirmasi otomatis...";
+    $("status").innerText = "📲 Scan QRIS → bayar → tunggu konfirmasi otomatis...";
 
-    // 3) polling status sampai completed
-    await pollStatus(pay.order_id);
+    btn.textContent = "Menunggu pembayaran...";
 
-    document.getElementById("status").innerText = "✅ Pembayaran sukses! Memproses panel...";
+    // 3) polling status sampai completed (FIX: kirim amount)
+    await pollStatus(pay.order_id, pay.amount);
 
-    // 4) (opsional) panggil fulfill-panel untuk create/extend Pterodactyl
-    // Kalau backend kamu sudah siap, UNCOMMENT:
-    //
-    // const f = await fetch(`/api/fulfill-panel?order_id=${encodeURIComponent(pay.order_id)}`);
+    $("status").innerText = "✅ Pembayaran sukses! Memproses panel...";
+
+    // 4) fulfill panel (aktifin nanti kalau backend udah ada)
+    // const f = await fetch(`/api/fulfill-panel?order_id=${encodeURIComponent(pay.order_id)}&amount=${encodeURIComponent(pay.amount)}`);
     // const fj = await f.json();
     // if(!f.ok || fj.error) throw new Error(fj.error || "Gagal proses panel");
     //
-    // document.getElementById("resultBox").style.display = "block";
-    // document.getElementById("resultText").innerHTML = `
+    // $("resultBox").style.display = "block";
+    // $("resultText").innerHTML = `
     //   <b>Login Panel:</b> <a href="${fj.panel_url}" target="_blank">${fj.panel_url}</a><br>
     //   <b>Username:</b> <code>${fj.username}</code><br>
     //   <b>Password:</b> <code>${fj.password}</code><br>
@@ -227,18 +241,15 @@ document.getElementById("panelForm").addEventListener("submit", async (e)=>{
     //   <b>Grup Buyer:</b> <a href="${fj.buyer_group}" target="_blank">Klik join</a><br>
     //   <b>Admin WA:</b> <a href="https://wa.me/6283173403262" target="_blank">0831-7340-3262</a>
     // `;
-    //
-    // msg.textContent = "";
 
-    // sementara (kalau fulfill belum ada):
-    msg.textContent = "Pembayaran sukses. Backend fulfill-panel belum diaktifkan (create panel otomatis).";
+    msg.textContent = "✅ Pembayaran sukses. (Selanjutnya: aktifkan backend fulfill-panel biar panel auto dibuat).";
 
-    btn.disabled = false;
+    setFormDisabled(false);
     btn.textContent = "Bayar QRIS & Proses";
 
   }catch(err){
-    document.getElementById("status").innerText = "❌ Gagal: " + (err.message || err);
-    btn.disabled = false;
+    $("status").innerText = "❌ Gagal: " + (err.message || err);
+    setFormDisabled(false);
     btn.textContent = "Bayar QRIS & Proses";
   }
 });
