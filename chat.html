@@ -1,402 +1,457 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="theme-color" content="#0b0f19"/>
-  <title>Chat Yna AI — YNA STORE</title>
-  <meta name="description" content="Chat Yna AI — asisten imut YNA STORE (offline demo) untuk jelasin produk & bantu order." />
-  <link rel="stylesheet" href="assets/style.css"/>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Chat YNA AI — YNA STORE</title>
+
+  <style>
+    :root{
+      --bg1:#070A12; --bg2:#0B1430;
+      --card: rgba(255,255,255,.06);
+      --card2: rgba(255,255,255,.08);
+      --text:#EAF0FF; --muted: rgba(234,240,255,.68);
+      --line: rgba(255,255,255,.10);
+      --glow: 0 0 0 1px rgba(255,255,255,.06), 0 30px 80px rgba(0,0,0,.55);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1000px 700px at 20% 0%, rgba(120,140,255,.18), transparent 55%),
+        radial-gradient(900px 600px at 80% 10%, rgba(0,255,209,.10), transparent 55%),
+        radial-gradient(900px 700px at 50% 100%, rgba(255,0,168,.10), transparent 55%),
+        linear-gradient(180deg, var(--bg1), var(--bg2));
+      overflow-x:hidden;
+    }
+    .wrap{
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 18px 14px 28px;
+    }
+
+    /* topbar */
+    .topbar{
+      position: sticky; top:0; z-index:30;
+      backdrop-filter: blur(12px);
+      background: linear-gradient(180deg, rgba(7,10,18,.88), rgba(7,10,18,.55));
+      border-bottom: 1px solid var(--line);
+    }
+    .topbar .row{
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 12px 14px;
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      text-decoration:none; color:var(--text);
+    }
+    .dot{
+      width:12px; height:12px; border-radius:999px;
+      background: radial-gradient(circle at 30% 30%, #B8C2FF, #4B5BFF 55%, #0AF 100%);
+      box-shadow: 0 0 22px rgba(96,120,255,.45);
+    }
+    .brand b{letter-spacing:.4px}
+    .tag{
+      font-size:12px; color:var(--muted);
+      padding: 6px 10px;
+      border:1px solid var(--line);
+      border-radius:999px;
+      background: rgba(255,255,255,.04);
+      white-space:nowrap;
+    }
+
+    /* layout */
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:14px;
+      margin-top:14px;
+    }
+    @media (max-width: 900px){
+      .grid{grid-template-columns:1fr}
+    }
+
+    .card{
+      background: var(--card);
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--glow);
+      overflow:hidden;
+    }
+    .card-h{
+      padding:14px 14px 10px;
+      border-bottom: 1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
+    }
+    .card-h h1{
+      margin:0;
+      font-size: 16px;
+      letter-spacing:.2px;
+    }
+    .sub{
+      margin:0;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    /* chat */
+    .chat{
+      height: 70vh;
+      min-height: 520px;
+      display:flex;
+      flex-direction:column;
+    }
+    .msgs{
+      padding: 14px;
+      overflow:auto;
+      flex:1;
+    }
+    .bubble{
+      max-width: 82%;
+      padding: 10px 12px;
+      border-radius: 16px;
+      border:1px solid var(--line);
+      margin: 0 0 10px 0;
+      line-height: 1.35;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .ai{
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      border-top-left-radius: 6px;
+    }
+    .me{
+      margin-left:auto;
+      background: linear-gradient(180deg, rgba(75,91,255,.18), rgba(75,91,255,.08));
+      border-top-right-radius: 6px;
+    }
+    .meta{
+      font-size: 11px;
+      color: var(--muted);
+      margin: -6px 0 10px 2px;
+    }
+
+    .typing{
+      display:inline-flex; gap:4px; align-items:center;
+    }
+    .typing span{
+      width:6px; height:6px; border-radius:999px;
+      background: rgba(234,240,255,.55);
+      animation: bop 1s infinite ease-in-out;
+    }
+    .typing span:nth-child(2){animation-delay:.15s}
+    .typing span:nth-child(3){animation-delay:.30s}
+    @keyframes bop{0%,100%{transform:translateY(0);opacity:.55}50%{transform:translateY(-4px);opacity:1}}
+
+    .composer{
+      border-top:1px solid var(--line);
+      padding: 12px;
+      display:flex;
+      gap:10px;
+      align-items:flex-end;
+      background: rgba(0,0,0,.18);
+      backdrop-filter: blur(10px);
+    }
+    textarea{
+      flex:1;
+      resize:none;
+      min-height: 46px;
+      max-height: 140px;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border:1px solid var(--line);
+      outline:none;
+      color:var(--text);
+      background: rgba(255,255,255,.05);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
+    }
+    textarea::placeholder{color: rgba(234,240,255,.42)}
+    .btn{
+      cursor:pointer;
+      border:none;
+      color:var(--text);
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.08);
+      border:1px solid var(--line);
+      transition: transform .12s ease, background .12s ease;
+      white-space:nowrap;
+    }
+    .btn:hover{transform: translateY(-1px); background: rgba(255,255,255,.10)}
+    .btn:active{transform: translateY(0px) scale(.98)}
+    .btn.primary{
+      background: linear-gradient(90deg, rgba(75,91,255,.55), rgba(0,255,209,.22));
+      border:1px solid rgba(255,255,255,.14);
+    }
+    .chips{
+      padding: 10px 12px 12px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      border-top:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+    }
+    .chip{
+      font-size:12px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      cursor:pointer;
+      user-select:none;
+      transition: transform .12s ease, background .12s ease;
+    }
+    .chip:hover{transform: translateY(-1px); background: rgba(255,255,255,.07)}
+    .side{
+      padding: 14px;
+    }
+    .side h2{
+      margin:0 0 8px 0;
+      font-size:14px;
+    }
+    .list{
+      margin:0;
+      padding-left:18px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .k{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 8px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      color: rgba(234,240,255,.9);
+    }
+    a{color: #B8C2FF}
+    .foot{
+      margin-top:12px;
+      font-size:12px;
+      color: var(--muted);
+    }
+  </style>
 </head>
 
-<body class="app">
-  <div id="loader" class="loader">
-    <div class="loader__card">
-      <div class="loader__logo">YNA</div>
-      <div class="loader__text">
-        <div class="loader__title">CHAT YNA AI</div>
-        <div class="loader__sub">Loading…</div>
-      </div>
-      <div class="loader__bar"><span></span></div>
+<body>
+  <div class="topbar">
+    <div class="row">
+      <a class="brand" href="index.html">
+        <span class="dot"></span>
+        <div>
+          <b>YNA STORE</b><br/>
+          <span class="sub">Chat YNA AI • asisten digital</span>
+        </div>
+      </a>
+      <div class="tag">Modern • Aman • Cepat</div>
     </div>
   </div>
 
-  <canvas id="snow" class="snow"></canvas>
+  <div class="wrap">
+    <div class="grid">
 
-  <header class="topbar">
-    <a class="brand" href="index.html">
-      <span class="brand__dot"></span>
-      <span class="brand__name">YNA STORE</span>
-      <span class="brand__tag">Chat Yna AI</span>
-    </a>
-
-    <nav class="nav" id="nav">
-      <a href="index.html">Home</a>
-      <a href="promo.html">Promo</a>
-      <a href="produk.html">Produk</a>
-      <a href="order-panel.html">Order Panel</a>
-      <a href="order-script.html">Order Script</a>
-      <a href="order-sewa.html">Sewa Bot</a>
-      <a href="kontak.html" class="nav__cta">Kontak</a>
-    </nav>
-
-    <button class="hamburger" id="hamburger" aria-label="Menu">
-      <span></span><span></span><span></span>
-    </button>
-  </header>
-
-  <main class="container">
-    <section class="section" style="margin-top:0;">
-      <div class="section__head">
-        <div>
-          <h2 class="h2">Chat Yna AI</h2>
-          <p class="muted">Versi web (demo). Untuk order real, klik tombol WA di bawah.</p>
+      <!-- CHAT -->
+      <div class="card chat">
+        <div class="card-h">
+          <div>
+            <h1>Chat YNA AI 🤖✨</h1>
+            <p class="sub">Tanya apa aja soal Panel, Script Bot, Sewa Bot, Top Up, Edit HD, dll.</p>
+          </div>
+          <button class="btn" id="btnClear">Reset</button>
         </div>
-        <a class="btn btn--small btn--ghost" href="https://wa.me/6283173403262" target="_blank" rel="noopener">Chat Admin</a>
+
+        <div class="msgs" id="msgs"></div>
+
+        <div class="chips" id="chips">
+          <div class="chip" data-q="Harga panelnya gimana?">Harga Panel</div>
+          <div class="chip" data-q="Aku mau order panel RAM 5, gimana langkahnya?">Cara Order Panel</div>
+          <div class="chip" data-q="List script bot YNA apa aja dan harganya?">List Script Bot</div>
+          <div class="chip" data-q="Sewa bot YNA AI 1 bulan berapa dan rulesnya?">Sewa Bot</div>
+          <div class="chip" data-q="Kontak admin YNA STORE?">Kontak Admin</div>
+        </div>
+
+        <div class="composer">
+          <textarea id="inp" placeholder="Ketik pertanyaanmu… (misal: ‘aku mau sewa bot 3 bulan’)" rows="1"></textarea>
+          <button class="btn primary" id="btnSend">Kirim</button>
+        </div>
       </div>
 
-      <div class="grid" style="display:grid; gap:14px; grid-template-columns: 1fr .9fr;">
-        <!-- CHAT -->
-        <div class="card card--glass">
-          <div class="card__head">
-            <div class="card__title">Yna AI</div>
-            <div class="badge badge--soft">Cute • Helpful • Store Mode</div>
-          </div>
-
-          <div class="chatbox" id="chatbox" aria-label="Chat box">
-            <!-- messages injected -->
-          </div>
-
-          <div class="quickbar" id="quickbar">
-            <button class="chip" data-q="produk">Produk</button>
-            <button class="chip" data-q="panel">Panel</button>
-            <button class="chip" data-q="script">Script</button>
-            <button class="chip" data-q="sewa">Sewa Bot</button>
-            <button class="chip" data-q="payment">Payment</button>
-            <button class="chip" data-q="promo">Promo</button>
-          </div>
-
-          <form id="chatForm" class="chatinput">
-            <input id="msg" class="input" placeholder="Tanya apa aja… (contoh: harga panel ram 8?)" autocomplete="off" required/>
-            <button class="btn btn--primary" type="submit">
-              Kirim
-              <span class="btn__glow"></span>
-            </button>
-          </form>
-
-          <div class="muted" style="margin-top:10px;font-size:12px;line-height:1.6;">
-            *Catatan:* Ini chat offline (tanpa API). Kalau kamu mau AI beneran (Gemini/OpenAI), perlu backend.  
-            Tapi untuk order, tombol WA sudah siap dan langsung format pesan.
+      <!-- SIDE INFO -->
+      <div class="card">
+        <div class="card-h">
+          <div>
+            <h1>Info Cepat</h1>
+            <p class="sub">Yang paling sering ditanya buyer.</p>
           </div>
         </div>
+        <div class="side">
+          <h2>Kontak YNA STORE</h2>
+          <ul class="list">
+            <li>WhatsApp: <a href="https://wa.me/6283173403262" target="_blank">0831-7340-3262</a></li>
+            <li>WA Cadangan: <span class="k">0831-1494-1794</span></li>
+            <li>Email: <span class="k">nadbrtpro@gmail.com</span></li>
+            <li>IG: <span class="k">@yna_store</span></li>
+            <li>TikTok: <span class="k">@yna_store_</span></li>
+            <li>Telegram: <span class="k">@ynastore1</span></li>
+          </ul>
 
-        <!-- SIDE INFO -->
-        <div class="card card--glass">
-          <div class="card__head">
-            <div class="card__title">Quick Order</div>
-            <div class="badge">Fast</div>
-          </div>
+          <h2 style="margin-top:14px;">Metode Pembayaran Manual</h2>
+          <ul class="list">
+            <li>Dana: <span class="k">083899782574</span></li>
+            <li>GoPay: <span class="k">083138675899</span></li>
+          </ul>
 
-          <div class="features" style="grid-template-columns:1fr; gap:10px;">
-            <div class="feature">
-              <div class="feature__t">Website</div>
-              <div class="feature__s"><a href="https://ynastore.my.id" target="_blank" rel="noopener">ynastore.my.id</a></div>
-            </div>
-            <div class="feature">
-              <div class="feature__t">WhatsApp Admin</div>
-              <div class="feature__s"><a href="https://wa.me/6283173403262" target="_blank" rel="noopener">0831-7340-3262</a></div>
-            </div>
-            <div class="feature">
-              <div class="feature__t">Grup Buyer</div>
-              <div class="feature__s"><a href="https://chat.whatsapp.com/GSlHNKIDJJoIPGhOp5zoWs" target="_blank" rel="noopener">Join</a></div>
-            </div>
-          </div>
-
-          <div class="card" style="margin-top:12px; background: rgba(255,255,255,.04); border-radius:18px;">
-            <div class="muted" style="font-size:12px; line-height:1.6;">
-              Mau order cepat?
-              <ul style="margin:8px 0 0 18px;">
-                <li>Panel: isi form di <b>Order Panel</b></li>
-                <li>Script: isi form di <b>Order Script</b></li>
-                <li>Sewa: isi form di <b>Sewa Bot</b></li>
-              </ul>
-            </div>
-
-            <div class="hero__actions" style="margin-top:12px;">
-              <a class="btn btn--primary" href="order-panel.html">
-                Order Panel
-                <span class="btn__glow"></span>
-              </a>
-              <a class="btn btn--ghost" href="order-script.html">Order Script</a>
-              <a class="btn btn--ghost" href="order-sewa.html">Sewa Bot</a>
-            </div>
-          </div>
-
-          <div class="card" style="margin-top:12px;">
-            <b>Payment Manual</b><br>
-            DANA: <b>083899782574</b><br>
-            GoPay: <b>083138675899</b><br>
-            <div class="muted" style="margin-top:8px;font-size:12px;">
-              Untuk otomatis, tetap rekomendasi QRIS Pakasir via halaman order.
-            </div>
+          <div class="foot">
+            Tips: Kalau kamu lagi order (panel/script/sewa bot) via halaman order, setelah bayar sukses, data akan tampil otomatis di halaman order.
           </div>
         </div>
       </div>
 
-      <footer class="footer">
-        <div class="footer__bottom">
-          <span>© <span id="year"></span> YNA STORE</span>
-          <span class="muted">Chat</span>
-        </div>
-      </footer>
-    </section>
-  </main>
+    </div>
+  </div>
 
-  <audio id="clickSound" preload="auto">
-    <source src="assets/click.mp3" type="audio/mpeg">
-  </audio>
-
-  <script src="assets/app.js"></script>
   <script>
-    // ===== Chat Yna AI (offline rules) =====
-    const chatbox = document.getElementById("chatbox");
-    const form = document.getElementById("chatForm");
-    const msg = document.getElementById("msg");
-    const quickbar = document.getElementById("quickbar");
+    // ====== API AI (dari file bot kamu) ======
+    const AI_URL = "https://alipai-api.vercel.app/ai/gemini?apikey=alipainewapikey&prompt=";
 
-    const DATA = {
-      adminWa: "https://wa.me/6283173403262",
-      groupBuyer: "https://chat.whatsapp.com/GSlHNKIDJJoIPGhOp5zoWs",
-      site: "https://ynastore.my.id",
-      panel: [
-        "RAM 5 — Rp20.000",
-        "RAM 8 — Rp25.000",
-        "RAM 10 — Rp30.000",
-        "RAM Unlimited — Rp35.000",
-      ],
-      script: [
-        "SC STORE — 120K (Free Rename + Free Panel Unlimited 1 bulan + Garansi 6 bulan)",
-        "SC MD — 150K (Free Rename + Free Panel Unlimited 1 bulan + Garansi 6 bulan)",
-        "SC YNA AI — 180K (Free Rename + Free Panel Unlimited 1 bulan + Full Setup)",
-      ],
-      sewa: {
-        "BOT STORE YNA": ["1 Bulan 12K","2 Bulan 20K","3 Bulan 35K","5 Bulan 50K","1 Tahun 85K","Permanen 150K"],
-        "BOT MD YNA": ["1 Bulan 15K","2 Bulan 25K","3 Bulan 40K","5 Bulan 60K","1 Tahun 100K","Permanen 200K"],
-        "BOT YNA AI BUTTON": ["1 Bulan 15K","2 Bulan 25K","3 Bulan 40K","5 Bulan 60K","1 Tahun 100K","Permanen 220K"],
-      },
-      manual: { dana:"083899782574", gopay:"083138675899" }
-    };
+    const $ = (id)=>document.getElementById(id);
+    const msgs = $("msgs");
+    const inp  = $("inp");
 
-    function bubble(text, who="ai"){
-      const el = document.createElement("div");
-      el.className = "bubble " + (who==="me" ? "bubble--me":"bubble--ai");
-      el.innerHTML = text;
-      chatbox.appendChild(el);
-      chatbox.scrollTop = chatbox.scrollHeight;
+    // Persona + konteks YNA STORE biar AI fokus jualan & bantu
+    const SYSTEM_CONTEXT = `
+Kamu adalah "Chat YNA AI" — asisten lucu-imut tapi profesional milik YNA STORE.
+Fokus utama: membantu pelanggan memilih & order:
+1) Panel VPS (RAM 5=20K, RAM 8=25K, RAM 10=30K, Unlimited=35K).
+2) Script Bot: SC STORE 120K, SC MD 150K (diskon), SC YNA AI 180K.
+3) Sewa Bot:
+- BOT STORE YNA: 1B 12K, 2B 20K, 3B 35K, 5B 50K, 1T 85K, Permanen 150K
+- BOT MD YNA: 1B 15K, 2B 25K, 3B 40K, 5B 60K, 1T 100K, Permanen 200K
+- BOT YNA AI BUTTON: 1B 15K, 2B 25K, 3B 40K, 5B 60K, 1T 100K, Permanen 220K
+Rules sewa bot: bot wajib admin, jangan spam, tidak menerima grup >500 member, garansi selama sewa, kick bot = hangus, pindah grup max 1x, diskon hanya perpanjangan aktif.
+Kontak admin utama: WA 0831-7340-3262 (wa.me/6283173403262).
+Jawab singkat, jelas, pakai bahasa Indonesia gaul sopan. Beri call-to-action ke halaman order bila relevan.
+Jika user tanya hal di luar YNA STORE, jawab seperlunya tapi tetap arahkan ke layanan YNA STORE bila masuk akal.
+`;
+
+    function now(){
+      const d=new Date();
+      return d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'});
     }
 
-    function cuteTyping(){
-      const el = document.createElement("div");
-      el.className = "typing";
-      el.innerHTML = `<span></span><span></span><span></span>`;
-      chatbox.appendChild(el);
-      chatbox.scrollTop = chatbox.scrollHeight;
-      return el;
+    function addBubble(text, who="ai"){
+      const b=document.createElement("div");
+      b.className = "bubble " + (who==="me" ? "me":"ai");
+      b.textContent = text;
+      msgs.appendChild(b);
+
+      const m=document.createElement("div");
+      m.className="meta";
+      m.style.textAlign = who==="me" ? "right":"left";
+      m.textContent = (who==="me" ? "Kamu" : "YNA AI") + " • " + now();
+      msgs.appendChild(m);
+
+      msgs.scrollTop = msgs.scrollHeight;
+      return {bubble:b, meta:m};
     }
 
-    function reply(q){
-      const typing = cuteTyping();
+    function addTyping(){
+      const b=document.createElement("div");
+      b.className="bubble ai";
+      b.innerHTML = '<span class="typing"><span></span><span></span><span></span></span>  YNA AI lagi mikir…';
+      msgs.appendChild(b);
+      msgs.scrollTop = msgs.scrollHeight;
+      return b;
+    }
 
-      setTimeout(() => {
+    function cleanText(s){
+      return (s||"")
+        .replace(/\*\*/g,"")
+        .replace(/__/g,"")
+        .replace(/\n{3,}/g,"\n\n")
+        .trim();
+    }
+
+    async function askAI(userText){
+      const prompt = `${SYSTEM_CONTEXT}\n\nUser: ${userText}\n\nJawab sebagai Chat YNA AI:`;
+      const url = AI_URL + encodeURIComponent(prompt);
+
+      const r = await fetch(url, { method:"GET" });
+      if(!r.ok) throw new Error("AI API error");
+      const d = await r.json().catch(()=>null);
+
+      // beberapa API balikin {result:"..."} (sesuai file kamu)
+      const out = d?.result || d?.answer || d?.message || "";
+      if(!out) throw new Error("AI tidak memberi jawaban");
+      return cleanText(out);
+    }
+
+    function setInputRows(){
+      inp.style.height = "auto";
+      inp.style.height = Math.min(inp.scrollHeight, 140) + "px";
+    }
+
+    async function send(){
+      const text = (inp.value||"").trim();
+      if(!text) return;
+
+      addBubble(text,"me");
+      inp.value="";
+      setInputRows();
+
+      const typing = addTyping();
+
+      try{
+        const reply = await askAI(text);
         typing.remove();
-
-        const t = q.toLowerCase();
-
-        // intents
-        if (t.includes("produk") || t==="produk"){
-          bubble(`Ini yang paling sering dicari yaa ✨<br><br>
-          <b>• Panel:</b> ${DATA.panel.join(" • ")}<br>
-          <b>• Script:</b><br>— ${DATA.script.join("<br>— ")}<br><br>
-          Mau yang mana? Kamu bisa langsung order di menu:<br>
-          <a href="order-panel.html">Order Panel</a> • <a href="order-script.html">Order Script</a> • <a href="order-sewa.html">Sewa Bot</a>`);
-          return;
-        }
-
-        if (t.includes("panel")){
-          bubble(`Okeee, ini list <b>Panel YNA</b> 💻✨<br>
-          — ${DATA.panel.join("<br>— ")}<br><br>
-          Kalau mau order, buka: <a href="order-panel.html">Order Panel</a><br>
-          (nanti bayar QRIS, terus otomatis kirim format ke admin)`);
-          return;
-        }
-
-        if (t.includes("script")){
-          bubble(`Siapp, ini list <b>Script Bot YNA</b> 📜✨<br>
-          — ${DATA.script.join("<br>— ")}<br><br>
-          Ordernya lewat: <a href="order-script.html">Order Script</a>`);
-          return;
-        }
-
-        if (t.includes("sewa") || t.includes("rent")){
-          bubble(`Mau sewa bot yaa? 🤖✨<br><br>
-          <b>BOT STORE YNA</b>: ${DATA.sewa["BOT STORE YNA"].join(" • ")}<br>
-          <b>BOT MD YNA</b>: ${DATA.sewa["BOT MD YNA"].join(" • ")}<br>
-          <b>BOT YNA AI BUTTON</b>: ${DATA.sewa["BOT YNA AI BUTTON"].join(" • ")}<br><br>
-          Order: <a href="order-sewa.html">Sewa Bot</a>`);
-          return;
-        }
-
-        if (t.includes("payment") || t.includes("bayar") || t.includes("qris")){
-          bubble(`Untuk yang paling gampang & otomatis ✅<br>
-          → pakai QRIS via halaman order (Pakasir).<br><br>
-          Kalau <b>manual</b>:<br>
-          • DANA: <b>${DATA.manual.dana}</b><br>
-          • GoPay: <b>${DATA.manual.gopay}</b><br><br>
-          Setelah transfer manual, kirim bukti ke admin:<br>
-          <a href="${DATA.adminWa}" target="_blank" rel="noopener">Chat WhatsApp Admin</a>`);
-          return;
-        }
-
-        if (t.includes("promo")){
-          bubble(`Promo & info terbaru ada di page ini yaa ✨<br>
-          <a href="promo.html">Buka Promo</a><br><br>
-          Kamu juga bisa join grup buyer biar gak ketinggalan:<br>
-          <a href="${DATA.groupBuyer}" target="_blank" rel="noopener">Join Grup Buyer</a>`);
-          return;
-        }
-
-        if (t.includes("admin") || t.includes("wa")){
-          bubble(`Ini kontak admin yaa 📲<br>
-          <a href="${DATA.adminWa}" target="_blank" rel="noopener">0831-7340-3262</a><br><br>
-          Website: <a href="${DATA.site}" target="_blank" rel="noopener">${DATA.site}</a>`);
-          return;
-        }
-
-        // fallback (tetap fokus store)
-        bubble(`Hehe aku ngerti 😄<br>
-        Kamu mau yang mana nih?<br>
-        • <b>Panel</b> (ram 5/8/10/unlimited)<br>
-        • <b>Script Bot</b> (STORE/MD/YNA AI)<br>
-        • <b>Sewa Bot</b><br><br>
-        Ketik: <b>panel</b> / <b>script</b> / <b>sewa</b> / <b>payment</b> yaa ✨`);
-      }, 450);
+        addBubble(reply,"ai");
+      }catch(e){
+        typing.remove();
+        addBubble("Maaf yaa, AI lagi error 😿 Coba ulang sebentar atau tanya versi singkat.\nKalau mau cepat, chat admin: 0831-7340-3262", "ai");
+      }
     }
 
     // init greeting
-    bubble(`Hii kak 👋 aku <b>Yna AI</b> ✨<br>
-    Mau cari apa hari ini?<br>
-    <div style="margin-top:8px;">
-      <span class="badge badge--soft">Panel</span>
-      <span class="badge badge--soft">Script Bot</span>
-      <span class="badge badge--soft">Sewa Bot</span>
-    </div>
-    <div style="margin-top:10px;font-size:12px;" class="muted">
-      Kalau mau cepat, klik tombol “Produk” di bawah yaa.
-    </div>`);
+    addBubble(
+`Haii kak! Aku Chat YNA AI 🤖✨
+Mau order apa hari ini?
 
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const q = msg.value.trim();
-      if (!q) return;
-      bubble(q, "me");
-      msg.value = "";
-      reply(q);
+• Panel VPS (RAM 5/8/10/Unlimited)
+• Script Bot (SC STORE / SC MD / SC YNA AI)
+• Sewa Bot (Store/MD/AI Button)
+
+Ketik aja kebutuhanmu yaa~`,
+    "ai");
+
+    $("btnSend").addEventListener("click", send);
+    inp.addEventListener("keydown", (e)=>{
+      if(e.key==="Enter" && !e.shiftKey){
+        e.preventDefault();
+        send();
+      }
+    });
+    inp.addEventListener("input", setInputRows);
+    $("btnClear").addEventListener("click", ()=>{
+      msgs.innerHTML="";
+      addBubble("Chat direset ✅\nTanya lagi ya kak 😺", "ai");
     });
 
-    quickbar.addEventListener("click", (e) => {
-      const b = e.target.closest("[data-q]");
-      if (!b) return;
-      const q = b.dataset.q;
-      bubble(q, "me");
-      reply(q);
+    $("chips").addEventListener("click", (e)=>{
+      const chip = e.target.closest(".chip");
+      if(!chip) return;
+      inp.value = chip.getAttribute("data-q") || "";
+      setInputRows();
+      send();
     });
   </script>
-
-  <style>
-    .chatbox{
-      height: 52vh;
-      min-height: 360px;
-      max-height: 560px;
-      overflow:auto;
-      padding: 14px;
-      border-radius: 22px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.03);
-      box-shadow: 0 18px 55px rgba(0,0,0,.35);
-    }
-    .bubble{
-      max-width: 78%;
-      padding: 12px 12px;
-      border-radius: 16px;
-      margin: 10px 0;
-      line-height: 1.55;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.05);
-    }
-    .bubble--ai{ border-top-left-radius: 10px; }
-    .bubble--me{
-      margin-left:auto;
-      background: rgba(120,120,255,.12);
-      border-color: rgba(120,120,255,.28);
-      border-top-right-radius: 10px;
-    }
-
-    .chatinput{
-      display:flex;
-      gap: 10px;
-      margin-top: 12px;
-      align-items:center;
-    }
-    .chatinput .input{ flex: 1; }
-
-    .quickbar{
-      display:flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 12px;
-    }
-    .chip{
-      padding: 8px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.04);
-      color: rgba(255,255,255,.92);
-      cursor: pointer;
-      transition: transform .12s ease, background .12s ease;
-    }
-    .chip:hover{ transform: translateY(-1px); background: rgba(255,255,255,.06); }
-    .chip:active{ transform: translateY(0px) scale(.98); }
-
-    .typing{
-      display:flex;
-      gap:6px;
-      padding: 10px 12px;
-      width: fit-content;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
-      margin: 10px 0;
-    }
-    .typing span{
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.7);
-      display:inline-block;
-      animation: bounce 1s infinite ease-in-out;
-    }
-    .typing span:nth-child(2){ animation-delay: .12s; }
-    .typing span:nth-child(3){ animation-delay: .24s; }
-
-    @keyframes bounce{
-      0%,80%,100%{ transform: translateY(0); opacity:.6; }
-      40%{ transform: translateY(-4px); opacity:1; }
-    }
-
-    @media (max-width: 980px){
-      .grid{ grid-template-columns: 1fr !important; }
-      .chatbox{ height: 50vh; min-height: 340px; }
-    }
-  </style>
 </body>
 </html>
