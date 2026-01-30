@@ -136,6 +136,80 @@
     }
   });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 
+<script>
+async function createOrder(payload){
+  const r = await fetch("/api/order-create",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify(payload)
+  });
+  const d = await r.json();
+  if(d.error) throw new Error(d.error);
+  return d;
+}
+
+function renderQR(qrString){
+  document.getElementById("qris").innerHTML = "";
+  new QRCode(document.getElementById("qris"), {
+    text: qrString,
+    width: 220,
+    height: 220
+  });
+}
+
+async function pollStatus(order_id){
+  while(true){
+    const r = await fetch(`/api/order-status?order_id=${encodeURIComponent(order_id)}`);
+    const d = await r.json();
+    if(d?.order?.status === "completed") return d.order;
+    document.getElementById("status").innerText = "Menunggu pembayaran...";
+    await new Promise(x=>setTimeout(x, 4000));
+  }
+}
+
+// ====== CONNECT KE FORM PANEL ======
+document.getElementById("panelForm").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+
+  const username = document.getElementById("username").value.trim().toLowerCase();
+  const wa = document.getElementById("wa").value.trim();
+  const plan = document.getElementById("ram").value; // pastikan value="5"|"8"|"10"|"unlimited"
+
+  document.getElementById("payBox").style.display = "block";
+  document.getElementById("status").innerText = "Membuat QRIS...";
+
+  try{
+    // 1) Create order + dapat qr_string
+    const pay = await createOrder({
+      type: "panel",
+      wa,
+      username,
+      plan
+    });
+
+    document.getElementById("orderInfo").innerHTML =
+      `<b>Order ID:</b> ${pay.order_id}<br><b>Nominal:</b> Rp${pay.amount}`;
+
+    // 2) Render QR di website kamu
+    renderQR(pay.qr_string);
+    document.getElementById("status").innerText = "Scan QRIS lalu bayar. Menunggu konfirmasi...";
+
+    // 3) Poll status
+    const order = await pollStatus(pay.order_id);
+
+    document.getElementById("status").innerText = "Pembayaran sukses! Memproses panel...";
+
+    // 4) Setelah sukses bayar -> panggil fulfill (nanti kita buat)
+    // const f = await fetch(`/api/fulfill-panel?order_id=${encodeURIComponent(pay.order_id)}`);
+    // const fj = await f.json();
+    // tampilkan hasil login panel + grup buyer + wa admin
+
+  }catch(err){
+    document.getElementById("status").innerText = "Gagal: " + (err.message || err);
+  }
+});
+</script>
 </body>
 </html>
