@@ -465,15 +465,12 @@
       position:relative;
       overflow:hidden;
     }
-    .popup__card::before{
-      content:"";
-      position:absolute; inset:-2px;
-      background: radial-gradient(circle at 20% 30%, rgba(110,231,255,.18), transparent 55%),
-                  radial-gradient(circle at 80% 70%, rgba(179,107,255,.16), transparent 60%);
-      filter: blur(18px);
-      opacity:.65;
-      pointer-events:none;
-    }
+    .popup__card{
+  ...
+  background: #12172a; /* solid */
+  backdrop-filter: none;
+  ...
+}
     .popup__close{
       position:absolute; right:12px; top:10px;
       border:0; background:rgba(255,255,255,.06);
@@ -496,6 +493,12 @@
     }
     .popup__btn{position:relative; z-index:2; margin-top:12px}
 
+    popup.addEventListener("click", (e)=>{
+  if(e.target === popup){
+    popup.classList.remove("show");
+    popup.setAttribute("aria-hidden","true");
+  }
+});
     /* Sound Off */
     .soundOff{
       position:fixed; right:14px; bottom:14px; z-index:999;
@@ -845,30 +848,58 @@
 
     // ===== Music autoplay (langsung nyala; kalau browser blok, nyala saat tap pertama)
     (function(){
-      const bgm = document.getElementById("bgm");
-      const off = document.getElementById("soundOff");
-      if(!bgm) return;
+  const bgm = document.getElementById("bgm");
+  const off = document.getElementById("soundOff");
+  if(!bgm) return;
 
-      function tryPlay(){
-        bgm.volume = 0.6;
-        bgm.play().catch(()=>{});
-      }
-      tryPlay();
+  // tombol kecil buat unlock jika autoplay diblok
+  const unlockBtn = document.createElement("button");
+  unlockBtn.className = "soundOff";
+  unlockBtn.id = "soundUnlock";
+  unlockBtn.textContent = "Tap untuk aktifkan sound";
+  unlockBtn.style.display = "none";
+  document.body.appendChild(unlockBtn);
 
-      // fallback if blocked
-      const unlock = ()=>{
-        tryPlay();
-        window.removeEventListener("pointerdown", unlock);
-        window.removeEventListener("keydown", unlock);
-      };
-      window.addEventListener("pointerdown", unlock, { once:true });
-      window.addEventListener("keydown", unlock, { once:true });
+  async function tryPlay(){
+    bgm.volume = 0.6;
+    try{
+      await bgm.play();
+      unlockBtn.style.display = "none";
+      off.style.display = "inline-flex";
+      return true;
+    }catch(e){
+      // autoplay diblok
+      unlockBtn.style.display = "inline-flex";
+      off.style.display = "none";
+      return false;
+    }
+  }
 
-      off?.addEventListener("click", ()=>{
-        bgm.pause();
-        off.style.display = "none";
-      });
-    })();
+  // coba play saat load
+  tryPlay();
+
+  // kalau user tap tombol unlock
+  unlockBtn.addEventListener("click", async ()=>{
+    await tryPlay();
+  });
+
+  // kalau user tap layar (sekali)
+  const unlockOnce = async ()=>{
+    await tryPlay();
+    window.removeEventListener("pointerdown", unlockOnce);
+    window.removeEventListener("keydown", unlockOnce);
+  };
+  window.addEventListener("pointerdown", unlockOnce, { once:true });
+  window.addEventListener("keydown", unlockOnce, { once:true });
+
+  // tombol OFF
+  off?.addEventListener("click", ()=>{
+    bgm.pause();
+    off.style.display = "none";
+    unlockBtn.style.display = "inline-flex";
+    unlockBtn.textContent = "Tap untuk aktifkan sound";
+  });
+})();
 
     // ===== Title per-letter animation + floating + lightning glow
     (function(){
@@ -881,8 +912,9 @@
         el.appendChild(lightning);
 
         [...text].forEach((ch,i)=>{
-          const s = document.createElement("span");
-          s.textContent = ch;
+  const s = document.createElement("span");
+  if (ch === " ") s.innerHTML = "&nbsp;";
+  else s.textContent = ch;
           s.style.display = "inline-block";
           s.style.transform = "translateY(10px)";
           s.style.opacity = "0";
