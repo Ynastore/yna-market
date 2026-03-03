@@ -788,7 +788,7 @@ hr.sep{
 
 .home-page .fxLineTop,
 .home-page .fxLineBottom{
-  opacity:0;
+  opacity:1;
   animation-fill-mode:forwards;
   will-change:transform, opacity, filter;
 }
@@ -826,7 +826,7 @@ hr.sep{
 
 @keyframes lineBottomIn{
   0%{
-    opacity:0;
+    opacity:1;
     transform:translateX(110vw) scale(2.6) rotate(12deg);
     filter:blur(10px);
   }
@@ -1373,6 +1373,12 @@ hr.sep{
 
 @media (prefers-reduced-motion: reduce){
   *{scroll-behavior:auto !important}
+   .home-page .fxLineTop,
+  .home-page .fxLineBottom{
+    opacity:1 !important;
+    transform:none !important;
+    filter:none !important;
+  }
   .btn, .nav a, .hamburger{transition:none !important}
   .loader__bar span,
   .home-page .chip__ping,
