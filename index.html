@@ -7,7 +7,7 @@
   <title>YNA STORE — Digital Store</title>
   <meta
     name="description"
-    content="YNA STORE — Platform digital terpercaya: jasa edit HD, top up all game, script bot WhatsApp, panel, sewa bot, dan layanan digital lainnya."
+    content="YNA STORE — Platform digital aman dan terpercaya: jasa edit HD, top up all game, script bot WhatsApp, panel, sewa bot, dan layanan digital lainnya."
   />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -40,11 +40,12 @@
         #070a12;
       color: var(--text);
       overflow-x: hidden;
+      -webkit-tap-highlight-color: transparent;
     }
 
     a { color: inherit; }
     .app { min-height: 100%; }
-    .container { width: min(1120px, 92vw); margin: 0 auto; padding: 0 0 28px; }
+    .container { width: min(1120px, 92vw); margin: 0 auto; padding: 0 0 28px; position: relative; z-index: 1; }
     .muted { color: var(--muted); }
     .muted2 { color: var(--muted2); }
     .h2 { margin: 0 0 10px; font-size: clamp(22px, 3vw, 28px); }
@@ -124,7 +125,7 @@
       inset: 0;
       z-index: 0;
       pointer-events: none;
-      opacity: 0.9;
+      opacity: 0.8;
     }
 
     /* TOPBAR */
@@ -232,7 +233,6 @@
     .hamburger.active span:nth-child(2) { opacity: 0; }
     .hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); opacity: 1; }
 
-    /* dropdown menu */
     .menuDrop {
       display: none;
       position: absolute;
@@ -308,6 +308,7 @@
     .hero__left {
       display: flex;
       flex-direction: column;
+      align-items: stretch;
     }
 
     .chip {
@@ -344,8 +345,7 @@
       align-items: center;
       width: 100%;
       margin: 14px 0 14px;
-      align-self: center;
-      min-height: 190px;
+      min-height: 200px;
     }
 
     .title {
@@ -364,7 +364,6 @@
       gap: 8px;
     }
 
-    /* TITLE FX */
     .fxTitle,
     .fxBrand {
       position: relative;
@@ -383,15 +382,13 @@
         0 8px 20px rgba(179, 107, 255, 0.35),
         0 14px 34px rgba(0, 0, 0, 0.42);
       user-select: none;
+      will-change: transform, opacity;
+      animation:
+        titleFloat 3.2s ease-in-out infinite;
     }
 
-    .fxTitle {
-      font-size: clamp(30px, 5vw, 52px);
-    }
-
-    .fxBrand {
-      font-size: clamp(42px, 8vw, 86px);
-    }
+    .fxTitle { font-size: clamp(30px, 5vw, 52px); }
+    .fxBrand { font-size: clamp(42px, 8vw, 86px); animation-duration: 3.6s; }
 
     .fxTitle::before,
     .fxBrand::before {
@@ -402,7 +399,6 @@
       transform: translate(4px, 4px);
       z-index: -2;
       opacity: 0.95;
-      filter: blur(0.2px);
       pointer-events: none;
     }
 
@@ -439,11 +435,15 @@
     }
 
     .fxLineTop {
-      animation: lineTopIn 4.2s cubic-bezier(.18, .88, .2, 1) forwards;
+      animation:
+        lineTopIn 4.2s cubic-bezier(.18, .88, .2, 1) forwards,
+        titleFloat 3.2s ease-in-out 4.2s infinite;
     }
 
     .fxLineBottom {
-      animation: lineBottomIn 4.6s cubic-bezier(.18, .88, .2, 1) forwards;
+      animation:
+        lineBottomIn 4.6s cubic-bezier(.18, .88, .2, 1) forwards,
+        titleFloat 3.6s ease-in-out 4.6s infinite;
     }
 
     @keyframes lineTopIn {
@@ -486,6 +486,11 @@
         transform: translateX(0) scale(1) rotate(0);
         filter: blur(0);
       }
+    }
+
+    @keyframes titleFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-3px); }
     }
 
     .fxSpark {
@@ -655,7 +660,6 @@
       line-height: 1.5;
     }
 
-    /* Fixed Order Cards */
     .orderCards {
       display: flex;
       flex-direction: column;
@@ -824,7 +828,7 @@
       display: none;
       align-items: flex-start;
       justify-content: center;
-      padding: 10px 16px 16px;
+      padding: 8px 16px 16px;
       z-index: 9999;
     }
 
@@ -880,7 +884,7 @@
 
     .popup__btn { position: relative; z-index: 2; margin-top: 12px; }
 
-    /* Sound Off */
+    /* Bottom unlock/off buttons */
     .soundOff {
       position: fixed;
       right: 14px;
@@ -896,11 +900,20 @@
       font: inherit;
     }
 
-    /* Mini Music Player */
-    .musicFab {
+    /* YNA SOUND */
+    .ynaSound {
       position: fixed;
-      left: 14px;
-      bottom: 14px;
+      top: 14px;
+      right: 14px;
+      z-index: 1003;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+    }
+
+    .ynaSound__fab {
+      position: relative;
       width: 58px;
       height: 58px;
       border-radius: 50%;
@@ -910,18 +923,33 @@
       display: grid;
       place-items: center;
       cursor: pointer;
-      z-index: 1001;
       box-shadow: 0 14px 35px rgba(0, 0, 0, 0.35);
       overflow: hidden;
     }
 
-    .musicFab__icon {
+    .ynaSound__fabLabel {
+      position: absolute;
+      top: 68px;
+      right: 0;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(15, 18, 30, 0.70);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      color: rgba(255,255,255,0.92);
+      backdrop-filter: blur(10px);
+      white-space: nowrap;
+    }
+
+    .ynaSound__icon {
       position: relative;
       z-index: 2;
       font-size: 20px;
     }
 
-    .musicFab__disc {
+    .ynaSound__disc {
       position: absolute;
       width: 36px;
       height: 36px;
@@ -931,15 +959,16 @@
       animation: discSpin 3s linear infinite;
     }
 
-    .musicFab.isPaused .musicFab__disc { animation-play-state: paused; }
-
-    .musicFab__pulse {
+    .ynaSound__pulse {
       position: absolute;
       inset: -8px;
       border-radius: 50%;
       background: radial-gradient(circle, rgba(179, 107, 255, 0.28), transparent 60%);
       animation: bassPulse 1s ease-in-out infinite;
     }
+
+    .ynaSound.paused .ynaSound__disc { animation-play-state: paused; }
+    .ynaSound.paused .ynaSound__pulse { animation-play-state: paused; opacity: 0.35; }
 
     @keyframes discSpin {
       from { transform: rotate(0); }
@@ -951,44 +980,40 @@
       50% { transform: scale(1.18); opacity: 0.8; }
     }
 
-    .musicPanel {
-      position: fixed;
-      left: 14px;
-      bottom: 84px;
+    .ynaSound__panel {
       width: min(360px, 92vw);
       border-radius: 20px;
       border: 1px solid rgba(255, 255, 255, 0.10);
-      background: rgba(15, 18, 30, 0.78);
+      background: rgba(15, 18, 30, 0.82);
       backdrop-filter: blur(14px);
       box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
-      z-index: 1002;
       padding: 14px;
       display: none;
+      margin-top: 42px;
     }
 
-    .musicPanel.show { display: block; animation: musicIn 0.25s ease; }
+    .ynaSound__panel.show { display: block; animation: musicIn 0.25s ease; }
 
     @keyframes musicIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .musicPanel__head {
+    .ynaSound__head {
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
       gap: 10px;
     }
 
-    .musicPanel__title { font-weight: 900; }
-
-    .musicPanel__sub {
+    .ynaSound__title { font-weight: 900; }
+    .ynaSound__sub {
       font-size: 12px;
       color: var(--muted);
       margin-top: 2px;
     }
 
-    .musicPanel__close {
+    .ynaSound__close {
       width: 34px;
       height: 34px;
       border-radius: 12px;
@@ -999,7 +1024,7 @@
       font: inherit;
     }
 
-    .musicPanel__now {
+    .ynaSound__now {
       margin-top: 12px;
       padding: 10px 12px;
       border-radius: 14px;
@@ -1009,13 +1034,13 @@
       font-size: 13px;
     }
 
-    .musicPanel__list {
+    .ynaSound__list {
       margin-top: 10px;
       display: grid;
       gap: 8px;
     }
 
-    .musicTrack {
+    .ynaTrack {
       width: 100%;
       text-align: left;
       padding: 10px 12px;
@@ -1028,14 +1053,14 @@
       font: inherit;
     }
 
-    .musicTrack:hover { background: rgba(255, 255, 255, 0.07); }
+    .ynaTrack:hover { background: rgba(255, 255, 255, 0.07); }
 
-    .musicTrack.active {
+    .ynaTrack.active {
       border-color: rgba(179, 107, 255, 0.42);
       background: rgba(179, 107, 255, 0.12);
     }
 
-    .musicPanel__controls {
+    .ynaSound__controls {
       display: flex;
       gap: 8px;
       margin-top: 12px;
@@ -1058,6 +1083,46 @@
       .titleWrap { min-height: 155px; }
       .fxBrand { font-size: clamp(36px, 11vw, 62px); }
       .fxTitle { font-size: clamp(24px, 7vw, 40px); }
+      .ynaSound {
+        top: 10px;
+        right: 10px;
+      }
+      .ynaSound__fab {
+        width: 52px;
+        height: 52px;
+      }
+      .ynaSound__fabLabel {
+        top: 60px;
+        font-size: 10px;
+        padding: 5px 8px;
+      }
+      .soundOff {
+        right: 10px;
+        bottom: 10px;
+        font-size: 13px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .loader__card,
+      .card,
+      .card--glass,
+      .popup__card,
+      .ynaSound__panel {
+        backdrop-filter: blur(10px);
+      }
+      .titleWrap { min-height: 130px; }
+      .fxSpark { width: 8px; height: 8px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
     }
   </style>
 </head>
@@ -1136,8 +1201,37 @@
     </div>
   </header>
 
+  <!-- YNA SOUND -->
+  <div id="ynaSound" class="ynaSound paused">
+    <button id="ynaSoundFab" class="ynaSound__fab" aria-label="Buka YNA SOUND">
+      <span class="ynaSound__disc"></span>
+      <span class="ynaSound__icon">🎵</span>
+      <span class="ynaSound__pulse"></span>
+    </button>
+    <div class="ynaSound__fabLabel">YNA SOUND</div>
+
+    <div id="ynaSoundPanel" class="ynaSound__panel" aria-hidden="true">
+      <div class="ynaSound__head">
+        <div>
+          <div class="ynaSound__title">YNA SOUND</div>
+          <div class="ynaSound__sub">mini player</div>
+        </div>
+        <button id="ynaSoundClose" class="ynaSound__close" type="button">✕</button>
+      </div>
+
+      <div class="ynaSound__now" id="ynaSoundNow">DJ LEGENDARIS X ANIMALS X STARBOY</div>
+      <div class="ynaSound__list" id="ynaSoundList"></div>
+
+      <div class="ynaSound__controls">
+        <button id="btnPlay" class="btn btn--ghost" type="button">Play</button>
+        <button id="btnPause" class="btn btn--ghost" type="button">Stop</button>
+        <button id="btnLoop" class="btn btn--primary" type="button">Putar Terus</button>
+      </div>
+    </div>
+  </div>
+
   <!-- HERO -->
-  <main class="container" style="position: relative; z-index: 1;">
+  <main class="container">
     <section class="hero">
       <div class="hero__left">
         <div class="chip">
@@ -1334,32 +1428,7 @@
   <!-- AUDIO -->
   <audio id="bgm" preload="auto" playsinline></audio>
 
-  <button id="soundOff" class="soundOff" aria-label="Matikan sound">Off Musik</button>
-
-  <button id="musicFab" class="musicFab" aria-label="Buka musik player">
-    <span class="musicFab__disc"></span>
-    <span class="musicFab__icon">🎵</span>
-    <span class="musicFab__pulse"></span>
-  </button>
-
-  <div id="musicPanel" class="musicPanel" aria-hidden="true">
-    <div class="musicPanel__head">
-      <div>
-        <div class="musicPanel__title">Music Player</div>
-        <div class="musicPanel__sub">YNA STORE mini player</div>
-      </div>
-      <button id="musicClose" class="musicPanel__close" type="button">✕</button>
-    </div>
-
-    <div class="musicPanel__now" id="musicNow">DJ LEGENDARIS X ANIMALS X STARBOY</div>
-    <div class="musicPanel__list" id="musicList"></div>
-
-    <div class="musicPanel__controls">
-      <button id="btnPlay" class="btn btn--ghost" type="button">Play</button>
-      <button id="btnPause" class="btn btn--ghost" type="button">Stop</button>
-      <button id="btnLoop" class="btn btn--primary" type="button">Putar Terus</button>
-    </div>
-  </div>
+  <button id="soundOff" class="soundOff" aria-label="Matikan sound" style="display:none;">Off Musik</button>
 
   <script>
     // ===== Year
@@ -1429,16 +1498,40 @@
       });
     })();
 
-    // ===== Music playlist
+    // ===== Title sparkle
+    (function () {
+      function addSparks(el, count) {
+        if (!el) return;
+
+        for (let i = 0; i < count; i++) {
+          const s = document.createElement("span");
+          s.className = "fxSpark";
+          s.style.left = Math.random() * 100 + "%";
+          s.style.top = Math.random() * 100 + "%";
+          s.style.animationDelay = Math.random() * 1.5 + "s";
+          s.style.transform = "scale(" + (0.6 + Math.random() * 0.8) + ")";
+          el.appendChild(s);
+        }
+      }
+
+      const top = document.querySelector(".fxLineTop");
+      const bottom = document.querySelector(".fxLineBottom");
+
+      addSparks(top, 3);
+      addSparks(bottom, 5);
+    })();
+
+    // ===== YNA SOUND
     (function () {
       const bgm = document.getElementById("bgm");
       const offBtn = document.getElementById("soundOff");
 
-      const musicFab = document.getElementById("musicFab");
-      const musicPanel = document.getElementById("musicPanel");
-      const musicClose = document.getElementById("musicClose");
-      const musicList = document.getElementById("musicList");
-      const musicNow = document.getElementById("musicNow");
+      const wrap = document.getElementById("ynaSound");
+      const fab = document.getElementById("ynaSoundFab");
+      const panel = document.getElementById("ynaSoundPanel");
+      const closeBtn = document.getElementById("ynaSoundClose");
+      const list = document.getElementById("ynaSoundList");
+      const now = document.getElementById("ynaSoundNow");
 
       const btnPlay = document.getElementById("btnPlay");
       const btnPause = document.getElementById("btnPause");
@@ -1464,6 +1557,7 @@
       let currentIndex = 0;
       let loopAll = true;
       let unlocked = false;
+      let started = false;
 
       const unlockBtn = document.createElement("button");
       unlockBtn.className = "soundOff";
@@ -1473,11 +1567,11 @@
       document.body.appendChild(unlockBtn);
 
       function renderTrackList() {
-        musicList.innerHTML = "";
+        list.innerHTML = "";
 
         tracks.forEach((track, i) => {
           const btn = document.createElement("button");
-          btn.className = "musicTrack" + (i === currentIndex ? " active" : "");
+          btn.className = "ynaTrack" + (i === currentIndex ? " active" : "");
           btn.textContent = track.title;
           btn.type = "button";
 
@@ -1488,16 +1582,20 @@
             await playAudio();
           });
 
-          musicList.appendChild(btn);
+          list.appendChild(btn);
         });
 
-        musicNow.textContent = tracks[currentIndex].title;
+        now.textContent = tracks[currentIndex].title;
       }
 
       function setTrack(index) {
         bgm.src = tracks[index].url;
         bgm.load();
-        musicNow.textContent = tracks[index].title;
+        now.textContent = tracks[index].title;
+      }
+
+      function setPlayingUI(playing) {
+        wrap.classList.toggle("paused", !playing);
       }
 
       async function playAudio() {
@@ -1505,19 +1603,22 @@
           bgm.volume = 0.8;
           await bgm.play();
           unlocked = true;
+          started = true;
           unlockBtn.style.display = "none";
           offBtn.style.display = "inline-flex";
-          musicFab.classList.remove("isPaused");
+          setPlayingUI(true);
+          return true;
         } catch (e) {
           unlockBtn.style.display = "inline-flex";
           offBtn.style.display = "none";
-          musicFab.classList.add("isPaused");
+          setPlayingUI(false);
+          return false;
         }
       }
 
       function stopAudio() {
         bgm.pause();
-        musicFab.classList.add("isPaused");
+        setPlayingUI(false);
       }
 
       async function nextTrack() {
@@ -1540,9 +1641,7 @@
       bgm.addEventListener("ended", nextTrack);
 
       unlockBtn.addEventListener("click", async () => {
-        if (!bgm.src) {
-          setTrack(currentIndex);
-        }
+        if (!bgm.src) setTrack(currentIndex);
         await playAudio();
       });
 
@@ -1554,9 +1653,7 @@
       });
 
       btnPlay?.addEventListener("click", async () => {
-        if (!bgm.src) {
-          setTrack(currentIndex);
-        }
+        if (!bgm.src) setTrack(currentIndex);
         await playAudio();
       });
 
@@ -1569,120 +1666,82 @@
         btnLoop.textContent = loopAll ? "Putar Terus" : "Sekali";
       });
 
-      musicFab?.addEventListener("click", () => {
-        const open = !musicPanel.classList.contains("show");
-        musicPanel.classList.toggle("show", open);
-        musicPanel.setAttribute("aria-hidden", open ? "false" : "true");
+      fab?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const open = !panel.classList.contains("show");
+        panel.classList.toggle("show", open);
+        panel.setAttribute("aria-hidden", open ? "false" : "true");
       });
 
-      musicClose?.addEventListener("click", () => {
-        musicPanel.classList.remove("show");
-        musicPanel.setAttribute("aria-hidden", "true");
+      closeBtn?.addEventListener("click", () => {
+        panel.classList.remove("show");
+        panel.setAttribute("aria-hidden", "true");
       });
 
       document.addEventListener("click", (e) => {
         if (
-          musicPanel.classList.contains("show") &&
-          !musicPanel.contains(e.target) &&
-          !musicFab.contains(e.target)
+          panel.classList.contains("show") &&
+          !panel.contains(e.target) &&
+          !fab.contains(e.target)
         ) {
-          musicPanel.classList.remove("show");
-          musicPanel.setAttribute("aria-hidden", "true");
+          panel.classList.remove("show");
+          panel.setAttribute("aria-hidden", "true");
         }
       });
 
-      // set first track
+      function firstUnlock() {
+        if (started) return;
+        started = true;
+        setTrack(currentIndex);
+        renderTrackList();
+        playAudio();
+      }
+
+      // browser mobile umumnya butuh interaksi pertama
+      window.addEventListener("pointerdown", firstUnlock, { once: true });
+      window.addEventListener("touchstart", firstUnlock, { once: true });
+      window.addEventListener("click", firstUnlock, { once: true });
+      window.addEventListener("keydown", firstUnlock, { once: true });
+
+      // coba autoplay dulu, kalau gagal fallback ke tap pertama
       setTrack(currentIndex);
       renderTrackList();
       playAudio();
 
-      // first interaction unlock if browser blocks autoplay
-      const unlockOnce = async () => {
-        if (!unlocked) {
-          await playAudio();
-        }
-      };
-
-      window.addEventListener("pointerdown", unlockOnce, { once: true });
-      window.addEventListener("keydown", unlockOnce, { once: true });
+      bgm.addEventListener("play", () => setPlayingUI(true));
+      bgm.addEventListener("pause", () => setPlayingUI(false));
     })();
 
-    // ===== Title sparkle + gentle shake after entry
-    (function () {
-      function addSparks(el, count) {
-        if (!el) return;
-
-        for (let i = 0; i < count; i++) {
-          const s = document.createElement("span");
-          s.className = "fxSpark";
-          s.style.left = Math.random() * 100 + "%";
-          s.style.top = Math.random() * 100 + "%";
-          s.style.animationDelay = Math.random() * 1.5 + "s";
-          s.style.transform = "scale(" + (0.6 + Math.random() * 0.8) + ")";
-          el.appendChild(s);
-        }
-      }
-
-      const top = document.querySelector(".fxLineTop");
-      const bottom = document.querySelector(".fxLineBottom");
-
-      addSparks(top, 3);
-      addSparks(bottom, 5);
-
-      setTimeout(() => {
-        top?.animate(
-          [
-            { transform: "translateX(0) rotate(0deg)" },
-            { transform: "translateX(0) rotate(-1deg)" },
-            { transform: "translateX(0) rotate(1deg)" },
-            { transform: "translateX(0) rotate(0deg)" }
-          ],
-          {
-            duration: 2800,
-            iterations: Infinity,
-            easing: "ease-in-out"
-          }
-        );
-
-        bottom?.animate(
-          [
-            { transform: "translateX(0) rotate(0deg)" },
-            { transform: "translateX(0) rotate(1deg)" },
-            { transform: "translateX(0) rotate(-1deg)" },
-            { transform: "translateX(0) rotate(0deg)" }
-          ],
-          {
-            duration: 3000,
-            iterations: Infinity,
-            easing: "ease-in-out"
-          }
-        );
-      }, 4800);
-    })();
-
-    // ===== Snow effect
+    // ===== Snow effect (lebih ringan di mobile)
     (function () {
       const canvas = document.getElementById("snow");
       if (!canvas) return;
 
-      const ctx = canvas.getContext("2d");
+      const ctx = canvas.getContext("2d", { alpha: true });
       let w;
       let h;
       let flakes = [];
+      let isMobile = window.innerWidth < 768;
 
       function resize() {
-        w = canvas.width = window.innerWidth * devicePixelRatio;
-        h = canvas.height = window.innerHeight * devicePixelRatio;
+        isMobile = window.innerWidth < 768;
+        const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2);
+
+        w = canvas.width = window.innerWidth * dpr;
+        h = canvas.height = window.innerHeight * dpr;
         canvas.style.width = window.innerWidth + "px";
         canvas.style.height = window.innerHeight + "px";
 
-        const count = Math.min(140, Math.floor(window.innerWidth / 9));
+        const count = isMobile
+          ? Math.min(42, Math.floor(window.innerWidth / 10))
+          : Math.min(85, Math.floor(window.innerWidth / 12));
+
         flakes = new Array(count).fill(0).map(() => ({
           x: Math.random() * w,
           y: Math.random() * h,
-          r: (Math.random() * 1.8 + 0.6) * devicePixelRatio,
-          s: (Math.random() * 0.9 + 0.35) * devicePixelRatio,
-          d: (Math.random() * 0.8 + 0.2) * devicePixelRatio
+          r: (Math.random() * 1.5 + 0.5) * dpr,
+          s: (Math.random() * 0.6 + 0.25) * dpr,
+          d: (Math.random() * 0.5 + 0.15) * dpr
         }));
       }
 
@@ -1691,11 +1750,11 @@
 
       function tick() {
         ctx.clearRect(0, 0, w, h);
-        ctx.globalAlpha = 0.85;
+        ctx.globalAlpha = 0.78;
 
         for (const f of flakes) {
           f.y += f.s;
-          f.x += Math.sin((f.y / h) * Math.PI * 2) * f.d * 0.25;
+          f.x += Math.sin((f.y / h) * Math.PI * 2) * f.d * 0.18;
 
           if (f.y > h + 10) {
             f.y = -10;
@@ -1704,7 +1763,7 @@
 
           ctx.beginPath();
           ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
-          ctx.fillStyle = "rgba(255,255,255,.85)";
+          ctx.fillStyle = "rgba(255,255,255,.82)";
           ctx.fill();
         }
 
